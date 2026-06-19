@@ -113,6 +113,9 @@ async function listTimetables(req, res) {
                    sg.name AS group_name,
                    l.name AS lecturer_name,
                    crs.name AS course_name,
+                   crs.school_id AS school_id,
+                   u.name AS unit_name,
+                   u.code AS unit_code,
                    a.username AS admin_username
             FROM timetables t
             JOIN classrooms c ON t.classroom_id = c.id
@@ -120,6 +123,7 @@ async function listTimetables(req, res) {
             JOIN student_groups sg ON t.group_id = sg.id
             JOIN lecturers l ON t.lecturer_id = l.id
             JOIN courses crs ON t.course_id = crs.id
+            JOIN units u ON t.unit_id = u.id
             JOIN administrators a ON t.admin_id = a.id
             ORDER BY t.day_of_week ASC, t.start_time ASC
         `;
@@ -133,11 +137,11 @@ async function listTimetables(req, res) {
 
 // Create timetable entry
 async function createTimetable(req, res) {
-    const { classroom_id, group_id, lecturer_id, course_id, day_of_week, start_time, end_time, unit_name } = req.body;
+    const { classroom_id, group_id, lecturer_id, course_id, day_of_week, start_time, end_time, unit_id } = req.body;
     const admin_id = req.admin.id;
 
-    if (!classroom_id || !group_id || !lecturer_id || !course_id || !day_of_week || !start_time || !end_time || !unit_name || !unit_name.trim()) {
-        return res.status(400).json({ error: 'All fields are required to create a timetable entry' });
+    if (!classroom_id || !group_id || !lecturer_id || !course_id || !day_of_week || !start_time || !end_time || !unit_id) {
+        return res.status(400).json({ error: 'All fields (classroom, student group, lecturer, course, day, start/end times, unit) are required' });
     }
 
     // Rule 4: Start time >= End time check
@@ -171,9 +175,9 @@ async function createTimetable(req, res) {
 
         // Insert timetable entry
         const [result] = await db.query(
-            `INSERT INTO timetables (admin_id, classroom_id, group_id, lecturer_id, course_id, day_of_week, start_time, end_time, unit_name)
+            `INSERT INTO timetables (admin_id, classroom_id, group_id, lecturer_id, course_id, unit_id, day_of_week, start_time, end_time)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
-            [admin_id, classroom_id, group_id, lecturer_id, course_id, day_of_week, start_time, end_time, unit_name.trim()]
+            [admin_id, classroom_id, group_id, lecturer_id, course_id, unit_id, day_of_week, start_time, end_time]
         );
 
         return res.json({
@@ -183,10 +187,10 @@ async function createTimetable(req, res) {
             group_id,
             lecturer_id,
             course_id,
+            unit_id,
             day_of_week,
             start_time,
-            end_time,
-            unit_name: unit_name.trim()
+            end_time
         });
     } catch (err) {
         console.error('Create timetable error:', err);
@@ -197,14 +201,14 @@ async function createTimetable(req, res) {
 // Update timetable entry
 async function updateTimetable(req, res) {
     const id = parseInt(req.params.id, 10);
-    const { classroom_id, group_id, lecturer_id, course_id, day_of_week, start_time, end_time, unit_name } = req.body;
+    const { classroom_id, group_id, lecturer_id, course_id, day_of_week, start_time, end_time, unit_id } = req.body;
     const admin_id = req.admin.id;
 
     if (isNaN(id)) {
         return res.status(400).json({ error: 'Invalid timetable entry ID' });
     }
-    if (!classroom_id || !group_id || !lecturer_id || !course_id || !day_of_week || !start_time || !end_time || !unit_name || !unit_name.trim()) {
-        return res.status(400).json({ error: 'All fields are required to update a timetable entry' });
+    if (!classroom_id || !group_id || !lecturer_id || !course_id || !day_of_week || !start_time || !end_time || !unit_id) {
+        return res.status(400).json({ error: 'All fields (classroom, student group, lecturer, course, day, start/end times, unit) are required' });
     }
 
     if (start_time >= end_time) {
@@ -245,9 +249,9 @@ async function updateTimetable(req, res) {
         // Update entry
         await db.query(
             `UPDATE timetables 
-             SET admin_id = ?, classroom_id = ?, group_id = ?, lecturer_id = ?, course_id = ?, day_of_week = ?, start_time = ?, end_time = ?, unit_name = ?
+             SET admin_id = ?, classroom_id = ?, group_id = ?, lecturer_id = ?, course_id = ?, unit_id = ?, day_of_week = ?, start_time = ?, end_time = ?
              WHERE id = ?`,
-            [admin_id, classroom_id, group_id, lecturer_id, course_id, day_of_week, start_time, end_time, unit_name.trim(), id]
+            [admin_id, classroom_id, group_id, lecturer_id, course_id, unit_id, day_of_week, start_time, end_time, id]
         );
 
         return res.json({
@@ -257,10 +261,10 @@ async function updateTimetable(req, res) {
             group_id,
             lecturer_id,
             course_id,
+            unit_id,
             day_of_week,
             start_time,
-            end_time,
-            unit_name: unit_name.trim()
+            end_time
         });
     } catch (err) {
         console.error('Update timetable error:', err);

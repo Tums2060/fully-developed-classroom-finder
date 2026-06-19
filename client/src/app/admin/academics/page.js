@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { GraduationCap, Landmark, BookOpen, Users2, ShieldAlert, Plus, Edit2, Trash2, X, AlertTriangle, CheckCircle } from 'lucide-react';
+import { GraduationCap, Landmark, BookOpen, Users2, ShieldAlert, Plus, Edit2, Trash2, X, AlertTriangle, CheckCircle, Book } from 'lucide-react';
 
 export default function AcademicsPage() {
     const { authFetch } = useAuth();
@@ -15,6 +15,7 @@ export default function AcademicsPage() {
     const [courses, setCourses] = useState([]);
     const [groups, setGroups] = useState([]);
     const [lecturers, setLecturers] = useState([]);
+    const [units, setUnits] = useState([]);
     const [loading, setLoading] = useState(true);
     
     // Feedback Alerts
@@ -33,6 +34,9 @@ export default function AcademicsPage() {
     const [lecturerForm, setLecturerForm] = useState({ id: null, name: '', email: '' });
     const [showLecturerModal, setShowLecturerModal] = useState(false);
 
+    const [unitForm, setUnitForm] = useState({ id: null, course_id: '', code: '', name: '', year: '1', semester: '1' });
+    const [showUnitModal, setShowUnitModal] = useState(false);
+
     // Fetch all records
     const fetchData = async () => {
         setLoading(true);
@@ -48,6 +52,9 @@ export default function AcademicsPage() {
 
             const lecturersRes = await authFetch('/admin/lecturers');
             if (lecturersRes.ok) setLecturers(await lecturersRes.json());
+
+            const unitsRes = await authFetch('/admin/units');
+            if (unitsRes.ok) setUnits(await unitsRes.json());
         } catch (err) {
             console.error('Failed to fetch academics data', err);
             triggerFeedback('error', 'Error loading academics data.');
@@ -237,6 +244,56 @@ export default function AcademicsPage() {
         }
     };
 
+    // --- UNIT CRUD ---
+    const handleSaveUnit = async (e) => {
+        e.preventDefault();
+        const { id, course_id, code, name, year, semester } = unitForm;
+        if (!course_id || !code.trim() || !name.trim() || !year || !semester) {
+            triggerFeedback('error', 'All fields are required.');
+            return;
+        }
+
+        const isEdit = id !== null;
+        const url = isEdit ? `/admin/units/${id}` : '/admin/units';
+        const method = isEdit ? 'PUT' : 'POST';
+
+        try {
+            const res = await authFetch(url, {
+                method,
+                body: JSON.stringify({
+                    course_id: parseInt(course_id, 10),
+                    code: code.trim(),
+                    name: name.trim(),
+                    year: parseInt(year, 10),
+                    semester: parseInt(semester, 10)
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to save unit');
+
+            triggerFeedback('success', `Unit ${isEdit ? 'updated' : 'added'} successfully.`);
+            setShowUnitModal(false);
+            setUnitForm({ id: null, course_id: '', code: '', name: '', year: '1', semester: '1' });
+            fetchData();
+        } catch (err) {
+            triggerFeedback('error', err.message);
+        }
+    };
+
+    const handleDeleteUnit = async (id) => {
+        if (!confirm('Are you sure you want to delete this unit?')) return;
+        try {
+            const res = await authFetch(`/admin/units/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to delete unit');
+
+            triggerFeedback('success', 'Unit deleted successfully.');
+            fetchData();
+        } catch (err) {
+            triggerFeedback('error', err.message);
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Tab navigation */}
@@ -272,6 +329,14 @@ export default function AcademicsPage() {
                     }`}
                 >
                     <GraduationCap className="h-4 w-4" /> Lecturers ({lecturers.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('units')}
+                    className={`flex items-center gap-2 px-6 py-3 border-b-2 font-bold text-sm transition-all ${
+                        activeTab === 'units' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                >
+                    <Book className="h-4 w-4" /> Units ({units.length})
                 </button>
             </div>
 
@@ -463,8 +528,82 @@ export default function AcademicsPage() {
                             )}
                         </div>
                     )}
+
+                    {/* --- UNITS TAB --- */}
+                    {activeTab === 'units' && (
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <h3 className="font-bold text-slate-800">Course Units</h3>
+                                    <p className="text-slate-500 text-xs mt-0.5">Academic course units categorized by year and semester.</p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setUnitForm({ id: null, course_id: courses[0]?.id || '', code: '', name: '', year: '1', semester: '1' });
+                                        setShowUnitModal(true);
+                                    }}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm flex items-center gap-1.5 transition shadow"
+                                    disabled={courses.length === 0}
+                                >
+                                    <Plus className="h-4 w-4" /> Add Unit
+                                </button>
+                            </div>
+                            {units.length === 0 ? (
+                                <div className="text-center py-12 text-slate-400 text-sm">No units registered.</div>
+                            ) : (
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-xs uppercase">
+                                            <th className="py-3.5 px-6">Unit Code</th>
+                                            <th className="py-3.5 px-6">Unit Name</th>
+                                            <th className="py-3.5 px-6">Course</th>
+                                            <th className="py-3.5 px-6">Year</th>
+                                            <th className="py-3.5 px-6">Semester</th>
+                                            <th className="py-3.5 px-6 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 text-sm">
+                                        {units.map(u => (
+                                            <tr key={u.id} className="hover:bg-slate-50/50">
+                                                <td className="py-4 px-6 font-bold text-blue-700">{u.code}</td>
+                                                <td className="py-4 px-6 font-semibold text-slate-800">{u.name}</td>
+                                                <td className="py-4 px-6 text-slate-600 font-semibold">{u.course_name}</td>
+                                                <td className="py-4 px-6 text-slate-600">Year {u.year}</td>
+                                                <td className="py-4 px-6 text-slate-600">Semester {u.semester}</td>
+                                                <td className="py-4 px-6 text-right space-x-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            setUnitForm({
+                                                                id: u.id,
+                                                                course_id: u.course_id,
+                                                                code: u.code,
+                                                                name: u.name,
+                                                                year: u.year.toString(),
+                                                                semester: u.semester.toString()
+                                                            });
+                                                            setShowUnitModal(true);
+                                                        }}
+                                                        className="bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 p-2 rounded-lg text-xs font-semibold"
+                                                    >
+                                                        <Edit2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteUnit(u.id)}
+                                                        className="bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 p-2 rounded-lg text-xs font-semibold"
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    )}
                 </>
             )}
+
 
             {/* --- SCHOOL MODAL --- */}
             {showSchoolModal && (
@@ -620,6 +759,92 @@ export default function AcademicsPage() {
                             <div className="flex justify-end gap-3 pt-2">
                                 <button type="button" onClick={() => setShowLecturerModal(false)} className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-600">Cancel</button>
                                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold">Save Lecturer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* --- UNIT MODAL --- */}
+            {showUnitModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full border border-slate-100 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <h3 className="font-bold text-slate-800">{unitForm.id ? 'Edit' : 'Add'} Course Unit</h3>
+                            <button onClick={() => setShowUnitModal(false)} className="text-slate-400 hover:text-slate-600"><X className="h-5 w-5" /></button>
+                        </div>
+                        <form onSubmit={handleSaveUnit} className="p-6 space-y-4">
+                            <div>
+                                <label htmlFor="unitCourse" className="block text-sm font-semibold text-slate-700 mb-2">Academic Course</label>
+                                <select
+                                    id="unitCourse"
+                                    value={unitForm.course_id}
+                                    onChange={(e) => setUnitForm({ ...unitForm, course_id: e.target.value })}
+                                    className="block w-full border border-slate-300 rounded-md p-3 text-slate-950 bg-white"
+                                    required
+                                >
+                                    {courses.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label htmlFor="unitCode" className="block text-sm font-semibold text-slate-700 mb-2">Unit Code</label>
+                                <input
+                                    type="text"
+                                    id="unitCode"
+                                    value={unitForm.code}
+                                    onChange={(e) => setUnitForm({ ...unitForm, code: e.target.value })}
+                                    className="block w-full border border-slate-300 rounded-md p-3 text-slate-950 bg-white"
+                                    placeholder="e.g. ICS 2201"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="unitName" className="block text-sm font-semibold text-slate-700 mb-2">Unit Name</label>
+                                <input
+                                    type="text"
+                                    id="unitName"
+                                    value={unitForm.name}
+                                    onChange={(e) => setUnitForm({ ...unitForm, name: e.target.value })}
+                                    className="block w-full border border-slate-300 rounded-md p-3 text-slate-950 bg-white"
+                                    placeholder="e.g. Systems Programming"
+                                    required
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="unitYear" className="block text-sm font-semibold text-slate-700 mb-2">Year</label>
+                                    <select
+                                        id="unitYear"
+                                        value={unitForm.year}
+                                        onChange={(e) => setUnitForm({ ...unitForm, year: e.target.value })}
+                                        className="block w-full border border-slate-300 rounded-md p-3 text-slate-950 bg-white"
+                                        required
+                                    >
+                                        <option value="1">Year 1</option>
+                                        <option value="2">Year 2</option>
+                                        <option value="3">Year 3</option>
+                                        <option value="4">Year 4</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="unitSemester" className="block text-sm font-semibold text-slate-700 mb-2">Semester</label>
+                                    <select
+                                        id="unitSemester"
+                                        value={unitForm.semester}
+                                        onChange={(e) => setUnitForm({ ...unitForm, semester: e.target.value })}
+                                        className="block w-full border border-slate-300 rounded-md p-3 text-slate-950 bg-white"
+                                        required
+                                    >
+                                        <option value="1">Semester 1</option>
+                                        <option value="2">Semester 2</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button type="button" onClick={() => setShowUnitModal(false)} className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-600">Cancel</button>
+                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold">Save Unit</button>
                             </div>
                         </form>
                     </div>

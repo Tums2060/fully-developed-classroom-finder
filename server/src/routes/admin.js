@@ -46,6 +46,12 @@ router.post('/lecturers', academicsController.createLecturer);
 router.put('/lecturers/:id', academicsController.updateLecturer);
 router.delete('/lecturers/:id', academicsController.deleteLecturer);
 
+// --- UNITS CRUD ---
+router.get('/units', academicsController.listUnits);
+router.post('/units', academicsController.createUnit);
+router.put('/units/:id', academicsController.updateUnit);
+router.delete('/units/:id', academicsController.deleteUnit);
+
 // --- TIMETABLES CRUD & CONFLICTS ---
 router.get('/timetables', timetableController.listTimetables);
 router.post('/timetables', timetableController.createTimetable);

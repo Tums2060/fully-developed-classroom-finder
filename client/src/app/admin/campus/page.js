@@ -6,15 +6,15 @@ import { Building2, GraduationCap, Plus, Edit2, Trash2, X, AlertTriangle, CheckC
 
 export default function CampusPage() {
     const { authFetch } = useAuth();
-    
+
     // Tab State: 'buildings' or 'classrooms'
     const [activeTab, setActiveTab] = useState('buildings');
-    
+
     // Data list states
     const [buildings, setBuildings] = useState([]);
     const [classrooms, setClassrooms] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+
     // Feedback alerts
     const [feedback, setFeedback] = useState({ type: '', message: '' });
 
@@ -163,21 +163,19 @@ export default function CampusPage() {
             <div className="flex border-b border-slate-200">
                 <button
                     onClick={() => setActiveTab('buildings')}
-                    className={`flex items-center gap-2 px-6 py-3 border-b-2 font-bold text-sm transition-all ${
-                        activeTab === 'buildings'
-                            ? 'border-blue-600 text-blue-600'
-                            : 'border-transparent text-slate-500 hover:text-slate-800'
-                    }`}
+                    className={`flex items-center gap-2 px-6 py-3 border-b-2 font-bold text-sm transition-all ${activeTab === 'buildings'
+                        ? 'border-blue-600 text-blue-600'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                        }`}
                 >
                     <Building2 className="h-4 w-4" /> Buildings ({buildings.length})
                 </button>
                 <button
                     onClick={() => setActiveTab('classrooms')}
-                    className={`flex items-center gap-2 px-6 py-3 border-b-2 font-bold text-sm transition-all ${
-                        activeTab === 'classrooms'
-                            ? 'border-blue-600 text-blue-600'
-                            : 'border-transparent text-slate-500 hover:text-slate-800'
-                    }`}
+                    className={`flex items-center gap-2 px-6 py-3 border-b-2 font-bold text-sm transition-all ${activeTab === 'classrooms'
+                        ? 'border-blue-600 text-blue-600'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                        }`}
                 >
                     <GraduationCap className="h-4 w-4" /> Classrooms ({classrooms.length})
                 </button>
@@ -185,11 +183,10 @@ export default function CampusPage() {
 
             {/* Notification Feedback */}
             {feedback.message && (
-                <div className={`p-4 rounded-lg flex items-start gap-3 border transition-all ${
-                    feedback.type === 'success'
-                        ? 'bg-emerald-50 border-emerald-100 text-emerald-800'
-                        : 'bg-rose-50 border-rose-100 text-rose-800'
-                }`}>
+                <div className={`p-4 rounded-lg flex items-start gap-3 border transition-all ${feedback.type === 'success'
+                    ? 'bg-emerald-50 border-emerald-100 text-emerald-800'
+                    : 'bg-rose-50 border-rose-100 text-rose-800'
+                    }`}>
                     {feedback.type === 'success' ? (
                         <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0" />
                     ) : (
@@ -289,8 +286,8 @@ export default function CampusPage() {
 
                     {classrooms.length === 0 ? (
                         <div className="text-center py-16 text-slate-400 text-sm">
-                            {buildings.length === 0 
-                                ? "You must add a building before creating classrooms." 
+                            {buildings.length === 0
+                                ? "You must add a building before creating classrooms."
                                 : "No classrooms configured. Click 'Add Classroom' to begin."
                             }
                         </div>
@@ -455,6 +452,7 @@ export default function CampusPage() {
                                         <option value="Seminar Room">Seminar Room</option>
                                         <option value="Auditorium">Auditorium</option>
                                         <option value="Tutorial Room">Tutorial Room</option>
+                                        <option value="Classroom">Classroom</option>
                                     </select>
                                 </div>
                             </div>

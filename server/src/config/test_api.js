@@ -105,6 +105,17 @@ async function runTests() {
         const courseId = courseRes.body.id;
         console.log(`✓ Course created: ID ${courseId}`);
 
+        console.log('Creating testing unit...');
+        const unitRes = await request('/api/admin/units', 'POST', {
+            course_id: courseId,
+            code: 'CS-TEST-101',
+            name: 'Algorithms',
+            year: 1,
+            semester: 1
+        }, token);
+        const unitId = unitRes.body.id;
+        console.log(`✓ Unit created: ID ${unitId}`);
+
         console.log('Creating testing student group...');
         const groupRes = await request('/api/admin/student-groups', 'POST', {
             course_id: courseId,
@@ -131,7 +142,7 @@ async function runTests() {
             day_of_week: 'Monday',
             start_time: '10:00:00',
             end_time: '12:00:00',
-            unit_name: 'Algorithms'
+            unit_id: unitId
         }, token);
 
         if (scheduleRes1.status !== 200) {
@@ -150,7 +161,7 @@ async function runTests() {
             day_of_week: 'Monday',
             start_time: '11:00:00',
             end_time: '13:00:00', // Overlaps
-            unit_name: 'Data Structures'
+            unit_id: unitId
         }, token);
 
         if (scheduleResConflict.status === 400) {
@@ -184,6 +195,7 @@ async function runTests() {
         // 8. Clean up test records (timetables must be deleted first due to RESTRICT)
         console.log('\nCleaning up database records...');
         await request(`/api/admin/timetables/${timetableId}`, 'DELETE', null, token);
+        await request(`/api/admin/units/${unitId}`, 'DELETE', null, token);
         await request(`/api/admin/lecturers/${lecturerId}`, 'DELETE', null, token);
         await request(`/api/admin/student-groups/${groupId}`, 'DELETE', null, token);
         await request(`/api/admin/courses/${courseId}`, 'DELETE', null, token);

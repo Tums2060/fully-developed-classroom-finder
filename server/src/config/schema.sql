@@ -3,6 +3,7 @@ USE classroom_finder;
 
 -- Drop existing tables if they exist to start fresh (in order of reverse dependency)
 DROP TABLE IF EXISTS timetables;
+DROP TABLE IF EXISTS units;
 DROP TABLE IF EXISTS classrooms;
 DROP TABLE IF EXISTS buildings;
 DROP TABLE IF EXISTS lecturers;
@@ -32,6 +33,17 @@ CREATE TABLE courses (
     school_id INT NOT NULL,
     name VARCHAR(150) NOT NULL,
     FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE RESTRICT
+);
+
+-- Units table
+CREATE TABLE units (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(150) NOT NULL,
+    year INT NOT NULL,
+    semester INT NOT NULL,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE RESTRICT
 );
 
 -- Student Groups table
@@ -73,15 +85,16 @@ CREATE TABLE timetables (
     group_id INT NOT NULL,
     lecturer_id INT NOT NULL,
     course_id INT NOT NULL,
+    unit_id INT NOT NULL,
     day_of_week VARCHAR(15) NOT NULL, -- e.g., 'Monday', 'Tuesday'
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
-    unit_name VARCHAR(100) NOT NULL,
     FOREIGN KEY (admin_id) REFERENCES administrators(id) ON DELETE RESTRICT,
     FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE RESTRICT,
     FOREIGN KEY (group_id) REFERENCES student_groups(id) ON DELETE RESTRICT,
     FOREIGN KEY (lecturer_id) REFERENCES lecturers(id) ON DELETE RESTRICT,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE RESTRICT
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE RESTRICT,
+    FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE RESTRICT
 );
 
 -- Performance and Conflict checking indexes

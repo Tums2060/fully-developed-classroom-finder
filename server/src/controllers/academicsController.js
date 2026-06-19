@@ -298,6 +298,135 @@ async function deleteLecturer(req, res) {
     }
 }
 
+// --- UNITS ---
+async function listUnits(req, res) {
+    try {
+        const query = `
+            SELECT u.*, c.name AS course_name, s.name AS school_name, c.school_id 
+            FROM units u
+            JOIN courses c ON u.course_id = c.id
+            JOIN schools s ON c.school_id = s.id
+            ORDER BY s.name ASC, c.name ASC, u.year ASC, u.semester ASC, u.name ASC
+        `;
+        const [rows] = await db.query(query);
+        return res.json(rows);
+    } catch (err) {
+        console.error('List units error:', err);
+        return res.status(500).json({ error: 'Internal server error listing units' });
+    }
+}
+
+async function createUnit(req, res) {
+    const { course_id, code, name, year, semester } = req.body;
+    if (!course_id || !code || !code.trim() || !name || !name.trim() || !year || !semester) {
+        return res.status(400).json({ error: 'Course, code, name, year, and semester are required' });
+    }
+
+    const unitYear = parseInt(year, 10);
+    const unitSemester = parseInt(semester, 10);
+
+    if (isNaN(unitYear) || unitYear < 1 || unitYear > 4) {
+        return res.status(400).json({ error: 'Year must be an integer between 1 and 4' });
+    }
+    if (isNaN(unitSemester) || unitSemester < 1 || unitSemester > 2) {
+        return res.status(400).json({ error: 'Semester must be 1 or 2' });
+    }
+
+    try {
+        // Verify course exists
+        const [course] = await db.query('SELECT * FROM courses WHERE id = ?', [course_id]);
+        if (course.length === 0) return res.status(400).json({ error: 'Selected course does not exist' });
+
+        // Check duplicate code
+        const [existing] = await db.query('SELECT * FROM units WHERE code = ?', [code.trim()]);
+        if (existing.length > 0) {
+            return res.status(400).json({ error: `Unit code '${code.trim()}' already exists` });
+        }
+
+        const [result] = await db.query(
+            'INSERT INTO units (course_id, code, name, year, semester) VALUES (?, ?, ?, ?, ?)',
+            [course_id, code.trim(), name.trim(), unitYear, unitSemester]
+        );
+        return res.json({
+            id: result.insertId,
+            course_id,
+            code: code.trim(),
+            name: name.trim(),
+            year: unitYear,
+            semester: unitSemester
+        });
+    } catch (err) {
+        console.error('Create unit error:', err);
+        return res.status(500).json({ error: 'Internal server error creating unit' });
+    }
+}
+
+async function updateUnit(req, res) {
+    const id = parseInt(req.params.id, 10);
+    const { course_id, code, name, year, semester } = req.body;
+
+    if (isNaN(id)) return res.status(400).json({ error: 'Invalid unit ID' });
+    if (!course_id || !code || !code.trim() || !name || !name.trim() || !year || !semester) {
+        return res.status(400).json({ error: 'Course, code, name, year, and semester are required' });
+    }
+
+    const unitYear = parseInt(year, 10);
+    const unitSemester = parseInt(semester, 10);
+
+    if (isNaN(unitYear) || unitYear < 1 || unitYear > 4) {
+        return res.status(400).json({ error: 'Year must be an integer between 1 and 4' });
+    }
+    if (isNaN(unitSemester) || unitSemester < 1 || unitSemester > 2) {
+        return res.status(400).json({ error: 'Semester must be 1 or 2' });
+    }
+
+    try {
+        const [course] = await db.query('SELECT * FROM courses WHERE id = ?', [course_id]);
+        if (course.length === 0) return res.status(400).json({ error: 'Selected course does not exist' });
+
+        // Check duplicate code excluding current ID
+        const [existing] = await db.query('SELECT * FROM units WHERE code = ? AND id != ?', [code.trim(), id]);
+        if (existing.length > 0) {
+            return res.status(400).json({ error: `Unit code '${code.trim()}' already exists` });
+        }
+
+        const [result] = await db.query(
+            'UPDATE units SET course_id = ?, code = ?, name = ?, year = ?, semester = ? WHERE id = ?',
+            [course_id, code.trim(), name.trim(), unitYear, unitSemester, id]
+        );
+        if (result.affectedRows === 0) return res.status(404).json({ error: 'Unit not found' });
+
+        return res.json({
+            id,
+            course_id,
+            code: code.trim(),
+            name: name.trim(),
+            year: unitYear,
+            semester: unitSemester
+        });
+    } catch (err) {
+        console.error('Update unit error:', err);
+        return res.status(500).json({ error: 'Internal server error updating unit' });
+    }
+}
+
+async function deleteUnit(req, res) {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) return res.status(400).json({ error: 'Invalid unit ID' });
+
+    try {
+        const [result] = await db.query('DELETE FROM units WHERE id = ?', [id]);
+        if (result.affectedRows === 0) return res.status(404).json({ error: 'Unit not found' });
+        return res.json({ success: true, message: 'Unit deleted successfully' });
+    } catch (err) {
+        console.error('Delete unit error:', err);
+        if (err.code === 'ER_ROW_IS_REFERENCED_2' || err.code === 'ER_ROW_IS_REFERENCED') {
+            return res.status(400).json({ error: 'Cannot delete unit: It is referenced by classes in the timetable. Delete the timetable entries first.' });
+        }
+        return res.status(500).json({ error: 'Internal server error deleting unit' });
+    }
+}
+
 module.exports = {
     listSchools,
     createSchool,
@@ -314,5 +443,9 @@ module.exports = {
     listLecturers,
     createLecturer,
     updateLecturer,
-    deleteLecturer
+    deleteLecturer,
+    listUnits,
+    createUnit,
+    updateUnit,
+    deleteUnit
 };

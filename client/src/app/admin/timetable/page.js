@@ -5,6 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { 
     CalendarClock, 
     Plus, 
+    Edit2,
     Trash2, 
     X, 
     AlertTriangle, 
@@ -24,6 +25,8 @@ export default function TimetablesPage() {
     const [courses, setCourses] = useState([]);
     const [groups, setGroups] = useState([]);
     const [lecturers, setLecturers] = useState([]);
+    const [schools, setSchools] = useState([]);
+    const [units, setUnits] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Form modal visibility
@@ -32,6 +35,7 @@ export default function TimetablesPage() {
     // Form inputs state
     const [form, setForm] = useState({
         id: null,
+        school_id: '',
         classroom_id: '',
         group_id: '',
         lecturer_id: '',
@@ -39,7 +43,7 @@ export default function TimetablesPage() {
         day_of_week: 'Monday',
         start_time: '08:00',
         end_time: '10:00',
-        unit_name: ''
+        unit_id: ''
     });
 
     // Reactive conflicts feedback states
@@ -72,6 +76,12 @@ export default function TimetablesPage() {
 
             const lRes = await authFetch('/admin/lecturers');
             if (lRes.ok) setLecturers(await lRes.json());
+
+            const sRes = await authFetch('/admin/schools');
+            if (sRes.ok) setSchools(await sRes.json());
+
+            const uRes = await authFetch('/admin/units');
+            if (uRes.ok) setUnits(await uRes.json());
         } catch (err) {
             console.error('Failed to load timetable parameters', err);
             triggerFeedback('error', 'Error loading timetable data.');
@@ -145,9 +155,9 @@ export default function TimetablesPage() {
 
     const handleSave = async (e) => {
         e.preventDefault();
-        const { id, classroom_id, group_id, lecturer_id, course_id, day_of_week, start_time, end_time, unit_name } = form;
+        const { id, school_id, classroom_id, group_id, lecturer_id, course_id, day_of_week, start_time, end_time, unit_id } = form;
 
-        if (!classroom_id || !group_id || !lecturer_id || !course_id || !day_of_week || !start_time || !end_time || !unit_name.trim()) {
+        if (!school_id || !classroom_id || !group_id || !lecturer_id || !course_id || !day_of_week || !start_time || !end_time || !unit_id) {
             triggerFeedback('error', 'All fields are required.');
             return;
         }
@@ -172,7 +182,7 @@ export default function TimetablesPage() {
                     day_of_week,
                     start_time,
                     end_time,
-                    unit_name: unit_name.trim()
+                    unit_id: parseInt(unit_id, 10)
                 })
             });
             const data = await res.json();
@@ -185,6 +195,7 @@ export default function TimetablesPage() {
             setShowModal(false);
             setForm({
                 id: null,
+                school_id: '',
                 classroom_id: '',
                 group_id: '',
                 lecturer_id: '',
@@ -192,7 +203,7 @@ export default function TimetablesPage() {
                 day_of_week: 'Monday',
                 start_time: '08:00',
                 end_time: '10:00',
-                unit_name: ''
+                unit_id: ''
             });
             fetchData();
         } catch (err) {
@@ -217,6 +228,18 @@ export default function TimetablesPage() {
 
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+    const filteredCourses = form.school_id 
+        ? courses.filter(c => c.school_id === parseInt(form.school_id, 10)) 
+        : [];
+
+    const filteredGroups = form.course_id 
+        ? groups.filter(g => g.course_id === parseInt(form.course_id, 10)) 
+        : [];
+
+    const filteredUnits = form.course_id
+        ? units.filter(u => u.course_id === parseInt(form.course_id, 10))
+        : [];
+
     const hasAnyConflict = conflicts.roomConflict || conflicts.groupConflict || conflicts.lecturerConflict || timeValidationError;
 
     return (
@@ -231,23 +254,24 @@ export default function TimetablesPage() {
                 </div>
                 <button
                     onClick={() => {
-                        setForm({
-                            id: null,
-                            classroom_id: classrooms[0]?.id || '',
-                            group_id: groups[0]?.id || '',
-                            lecturer_id: lecturers[0]?.id || '',
-                            course_id: courses[0]?.id || '',
-                            day_of_week: 'Monday',
-                            start_time: '08:00',
-                            end_time: '10:00',
-                            unit_name: ''
-                        });
-                        setConflicts({ roomConflict: false, groupConflict: false, lecturerConflict: false });
-                        setTimeValidationError(false);
-                        setShowModal(true);
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm flex items-center gap-1.5 transition-all shadow shadow-blue-100 cursor-pointer"
-                    disabled={classrooms.length === 0 || groups.length === 0 || lecturers.length === 0 || courses.length === 0}
+                    setForm({
+                        id: null,
+                        school_id: '',
+                        classroom_id: classrooms[0]?.id || '',
+                        group_id: '',
+                        lecturer_id: lecturers[0]?.id || '',
+                        course_id: '',
+                        day_of_week: 'Monday',
+                        start_time: '08:00',
+                        end_time: '10:00',
+                        unit_id: ''
+                    });
+                    setConflicts({ roomConflict: false, groupConflict: false, lecturerConflict: false });
+                    setTimeValidationError(false);
+                    setShowModal(true);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm flex items-center gap-1.5 transition-all shadow shadow-blue-100 cursor-pointer"
+                disabled={classrooms.length === 0 || groups.length === 0 || lecturers.length === 0 || courses.length === 0 || schools.length === 0}
                 >
                     <Plus className="h-4 w-4" /> Add Schedule Entry
                 </button>
@@ -295,8 +319,11 @@ export default function TimetablesPage() {
                                     {timetables.map((t) => (
                                         <tr key={t.id} className="hover:bg-slate-50/50">
                                             <td className="py-4 px-6 font-bold text-slate-800">
-                                                <div>{t.unit_name}</div>
-                                                <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{t.course_name}</div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-blue-700 font-bold text-xs uppercase bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">{t.unit_code}</span>
+                                                    <span>{t.unit_name}</span>
+                                                </div>
+                                                <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-1">{t.course_name}</div>
                                             </td>
                                             <td className="py-4 px-6 text-slate-700">
                                                 <div className="font-semibold text-slate-800">{t.day_of_week}</div>
@@ -315,7 +342,29 @@ export default function TimetablesPage() {
                                                     {t.group_name}
                                                 </span>
                                             </td>
-                                            <td className="py-4 px-6 text-right">
+                                            <td className="py-4 px-6 text-right space-x-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setForm({
+                                                            id: t.id,
+                                                            school_id: t.school_id || '',
+                                                            classroom_id: t.classroom_id,
+                                                            group_id: t.group_id,
+                                                            lecturer_id: t.lecturer_id,
+                                                            course_id: t.course_id,
+                                                            day_of_week: t.day_of_week,
+                                                            start_time: t.start_time.substring(0, 5),
+                                                            end_time: t.end_time.substring(0, 5),
+                                                            unit_id: t.unit_id || ''
+                                                        });
+                                                        setConflicts({ roomConflict: false, groupConflict: false, lecturerConflict: false });
+                                                        setTimeValidationError(false);
+                                                        setShowModal(true);
+                                                    }}
+                                                    className="inline-flex items-center gap-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 p-2 rounded-lg text-xs font-semibold transition"
+                                                >
+                                                    <Edit2 className="h-3.5 w-3.5" /> Edit
+                                                </button>
                                                 <button
                                                     onClick={() => handleDelete(t.id)}
                                                     className="inline-flex items-center gap-1 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 p-2 rounded-lg text-xs font-semibold transition"
@@ -337,7 +386,7 @@ export default function TimetablesPage() {
                 <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
                     <div className="bg-white rounded-xl shadow-xl max-w-lg w-full border border-slate-100 overflow-hidden my-8">
                         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                            <h3 className="font-bold text-slate-800">New Timetable Allocation</h3>
+                            <h3 className="font-bold text-slate-800">{form.id ? 'Edit' : 'New'} Timetable Allocation</h3>
                             <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">
                                 <X className="h-5 w-5" />
                             </button>
@@ -374,17 +423,45 @@ export default function TimetablesPage() {
 
                             {/* Core Inputs */}
                             <div>
-                                <label htmlFor="timetableUnit" className="block text-sm font-semibold text-slate-700 mb-1">Unit / Subject Name</label>
-                                <input
-                                    type="text"
+                                <label htmlFor="timetableUnit" className="block text-sm font-semibold text-slate-700 mb-1">Unit / Subject</label>
+                                <select
                                     id="timetableUnit"
-                                    value={form.unit_name}
-                                    onChange={(e) => setForm({ ...form, unit_name: e.target.value })}
-                                    className="block w-full border border-slate-300 rounded-md p-2.5 text-slate-950 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    placeholder="e.g. Distributed Database Systems"
+                                    value={form.unit_id}
+                                    onChange={(e) => setForm({ ...form, unit_id: e.target.value })}
+                                    className="block w-full border border-slate-300 rounded-md p-2.5 text-slate-950 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                                    disabled={!form.course_id}
                                     required
-                                />
+                                >
+                                    <option value="" disabled>Select Unit</option>
+                                    {filteredUnits.map(u => (
+                                        <option key={u.id} value={u.id}>
+                                            {u.code} - {u.name} (Year {u.year}, Sem {u.semester})
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
+
+                            <div>
+                                <label htmlFor="timetableSchool" className="block text-sm font-semibold text-slate-700 mb-1">School</label>
+                                <select
+                                    id="timetableSchool"
+                                    value={form.school_id}
+                                    onChange={(e) => setForm({ 
+                                        ...form, 
+                                        school_id: e.target.value,
+                                        course_id: '',
+                                        group_id: '',
+                                        unit_id: ''
+                                    })}
+                                    className="block w-full border border-slate-300 rounded-md p-2.5 text-slate-950 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    required
+                                >
+                                    <option value="" disabled>Select School</option>
+                                    {schools.map(s => (
+                                        <option key={s.id} value={s.id}>{s.name}</option>
+                                    ))}
+                                </select>
+                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -392,12 +469,18 @@ export default function TimetablesPage() {
                                     <select
                                         id="timetableCourse"
                                         value={form.course_id}
-                                        onChange={(e) => setForm({ ...form, course_id: e.target.value })}
-                                        className="block w-full border border-slate-300 rounded-md p-2.5 text-slate-950 bg-white"
+                                        onChange={(e) => setForm({ 
+                                            ...form, 
+                                            course_id: e.target.value,
+                                            group_id: '',
+                                            unit_id: ''
+                                        })}
+                                        className="block w-full border border-slate-300 rounded-md p-2.5 text-slate-950 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                                        disabled={!form.school_id}
                                         required
                                     >
-                                        <option value="" disabled>Select course</option>
-                                        {courses.map(c => (
+                                        <option value="" disabled>Select Course</option>
+                                        {filteredCourses.map(c => (
                                             <option key={c.id} value={c.id}>{c.name}</option>
                                         ))}
                                     </select>
@@ -408,11 +491,12 @@ export default function TimetablesPage() {
                                         id="timetableGroup"
                                         value={form.group_id}
                                         onChange={(e) => setForm({ ...form, group_id: e.target.value })}
-                                        className="block w-full border border-slate-300 rounded-md p-2.5 text-slate-950 bg-white"
+                                        className="block w-full border border-slate-300 rounded-md p-2.5 text-slate-950 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                                        disabled={!form.course_id}
                                         required
                                     >
-                                        <option value="" disabled>Select cohort</option>
-                                        {groups.map(g => (
+                                        <option value="" disabled>Select Cohort</option>
+                                        {filteredGroups.map(g => (
                                             <option key={g.id} value={g.id}>{g.name}</option>
                                         ))}
                                     </select>
