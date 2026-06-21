@@ -3,15 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
-    Search, 
-    GraduationCap, 
-    Building2, 
-    CalendarRange, 
-    Clock, 
-    Users, 
-    SlidersHorizontal, 
-    ShieldAlert 
+import {
+    Search,
+    GraduationCap,
+    Building2,
+    CalendarRange,
+    Clock,
+    Users,
+    SlidersHorizontal,
+    ShieldAlert
 } from 'lucide-react';
 
 export default function SearchPage() {
@@ -22,7 +22,7 @@ export default function SearchPage() {
     const [capacity, setCapacity] = useState('');
     const [roomType, setRoomType] = useState('All');
     const [roomTypes, setRoomTypes] = useState([]);
-    
+
     // Validation error state
     const [error, setError] = useState('');
 
@@ -149,14 +149,14 @@ export default function SearchPage() {
                                     className="h-11 w-auto object-contain"
                                     priority
                                 />
-                            <span className="font-bold text-xl tracking-tight">
-                                Free Classroom Finder
-                            </span>
+                                <span className="font-bold text-xl tracking-tight">
+                                    Free Classroom Finder
+                                </span>
                             </Link>
                         </div>
                         <div>
-                            <Link 
-                                href="/admin/login" 
+                            <Link
+                                href="/admin/login"
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-all-custom shadow"
                             >
                                 Admin Login
@@ -356,14 +356,14 @@ export default function SearchPage() {
                                 <ShieldAlert className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                                 <h3 className="font-bold text-slate-800 text-base">No Classrooms Available</h3>
                                 <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                                    {rooms.length === 0 
-                                        ? "All classrooms are currently booked or do not match your criteria for this time slot." 
+                                    {rooms.length === 0
+                                        ? "All classrooms are currently booked or do not match your criteria for this time slot."
                                         : "No classrooms match the selected building filter."
                                     }
                                 </p>
                                 {rooms.length > 0 && selectedBuilding !== 'All' && (
-                                    <button 
-                                        onClick={() => setSelectedBuilding('All')} 
+                                    <button
+                                        onClick={() => setSelectedBuilding('All')}
                                         className="mt-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-3.5 py-2 rounded-md font-semibold transition"
                                     >
                                         Clear Building Filter
@@ -376,8 +376,8 @@ export default function SearchPage() {
                         {!loadingResults && !searchError && hasSearched && filteredRooms.length > 0 && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 {filteredRooms.map((room) => (
-                                    <div 
-                                        key={room.id} 
+                                    <div
+                                        key={room.id}
                                         className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 hover:shadow-md transition-all-custom flex flex-col justify-between"
                                     >
                                         <div>
@@ -419,7 +419,7 @@ export default function SearchPage() {
 
             {/* Footer */}
             <footer className="bg-slate-100 border-t border-slate-200 py-6 text-center text-slate-500 text-sm">
-                &copy; {new Date().getFullYear()} Free Classroom Finder. For educational institutions and study groups.
+                &copy; {new Date().getFullYear()} Strathmore University Free Classroom Finder. For educational institutions and study groups.
             </footer>
         </div>
     );
