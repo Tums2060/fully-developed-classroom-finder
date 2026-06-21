@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS classroom_finder;
-USE classroom_finder;
+CREATE DATABASE IF NOT EXISTS classroom_finder2;
+USE classroom_finder2;
 
 -- Drop existing tables if they exist to start fresh (in order of reverse dependency)
 DROP TABLE IF EXISTS timetables;
