@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
     Search, 
     GraduationCap, 
@@ -139,8 +140,19 @@ export default function SearchPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center space-x-3">
-                            <GraduationCap className="h-8 w-8 text-blue-300" />
-                            <span className="font-bold text-xl tracking-tight">Free Classroom Finder</span>
+                            <Link href="/" className="flex items-center space-x-3">
+                                <Image
+                                    src="/strathmore-logo.png"
+                                    alt="Free Classroom Finder Logo"
+                                    width={120}
+                                    height={43}
+                                    className="h-11 w-auto object-contain"
+                                    priority
+                                />
+                            <span className="font-bold text-xl tracking-tight">
+                                Free Classroom Finder
+                            </span>
+                            </Link>
                         </div>
                         <div>
                             <Link 

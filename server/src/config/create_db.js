@@ -11,7 +11,7 @@ async function createDatabase() {
 
     try {
         await connection.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME}\``);
-        console.log('Database classroom_finder is ready or has been created.');
+        console.log('The Database is ready or has been created.');
         await connection.end();
         process.exit(0);
     } catch (err) {

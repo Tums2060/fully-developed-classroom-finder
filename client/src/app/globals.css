@@ -1,8 +1,25 @@
 @import "tailwindcss";
 
+@theme {
+  --color-blue-50: #f0f4fa;
+  --color-blue-100: #dce6f5;
+  --color-blue-200: #bdcfea;
+  --color-blue-300: #90b0dc;
+  --color-blue-400: #5c8bca;
+  --color-blue-500: #3367b3;
+  --color-blue-600: #066aab;
+  /* Strathmore Blue */
+  --color-blue-700: #022a76;
+  --color-blue-800: #01215a;
+  --color-blue-900: #011c4c;
+  --color-blue-950: #011130;
+}
+
 :root {
-  --background: #f8fafc; /* bg-slate-50 */
-  --foreground: #0f172a; /* text-slate-900 */
+  --background: #f8fafc;
+  /* bg-slate-50 */
+  --foreground: #0f172a;
+  /* text-slate-900 */
 }
 
 body {
@@ -20,6 +37,7 @@ body {
 .card-hover {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .card-hover:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);

@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthContext';
-import { GraduationCap, Lock, User, AlertCircle, ArrowLeft } from 'lucide-react';
+import Image from 'next/image';
+import { Lock, User, AlertCircle, ArrowLeft } from 'lucide-react';
 
 export default function LoginPage() {
     const { user, login, loading } = useAuth();
@@ -52,12 +53,17 @@ export default function LoginPage() {
             </div>
 
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="flex justify-center">
-                    <div className="bg-blue-900 p-3 rounded-xl shadow-md">
-                        <GraduationCap className="h-10 w-10 text-blue-200" />
-                    </div>
+                <div className="flex justify-center mb-6">
+                    <Image
+                        src="/strathmore-logo.png"
+                        alt="Strathmore Logo"
+                        width={240}
+                        height={86}
+                        className="h-20 w-auto object-contain"
+                        priority
+                    />
                 </div>
-                <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">
+                <h2 className="text-center text-3xl font-extrabold text-slate-900">
                     Administrator Login
                 </h2>
                 <p className="mt-2 text-center text-sm text-slate-600">

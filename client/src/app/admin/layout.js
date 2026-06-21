@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '../../context/AuthContext';
 import { 
     LayoutDashboard, 
@@ -62,9 +63,16 @@ export default function AdminLayout({ children }) {
             <aside className="w-64 bg-blue-900 text-white flex flex-col justify-between shadow-xl flex-shrink-0 z-10">
                 <div>
                     {/* Sidebar Brand Logo */}
-                    <div className="h-16 flex items-center gap-2.5 px-6 border-b border-blue-800 bg-blue-950">
-                        <GraduationCap className="h-7 w-7 text-blue-300" />
-                        <span className="font-bold text-lg tracking-tight">Classroom Finder</span>
+                    <div className="h-16 flex items-center gap-2 px-4 border-b border-blue-800 bg-blue-950">
+                        <Image
+                            src="/strathmore-logo.png"
+                            alt="Strathmore Logo"
+                            width={84}
+                            height={30}
+                            className="h-7.5 w-auto object-contain"
+                            priority
+                        />
+                        <span className="font-bold text-sm tracking-tight text-white">Classroom Finder</span>
                     </div>
 
                     {/* Navigation Menu */}
