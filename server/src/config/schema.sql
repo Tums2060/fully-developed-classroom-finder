@@ -77,6 +77,22 @@ CREATE TABLE classrooms (
     FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE RESTRICT
 );
 
+-- Room claims table
+CREATE TABLE room_claims (
+    claim_id INT AUTO_INCREMENT PRIMARY KEY,
+    classroom_id INT NOT NULL,
+    device_token VARCHAR(255) NOT NULL,
+    group_size INT NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    cancel_pin VARCHAR(4) NOT NULL,
+    FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE
+);
+
+-- Performance index for active claims verification and searching
+CREATE INDEX idx_active_claims ON room_claims(classroom_id, start_time, end_time);
+CREATE INDEX idx_device_active_claims ON room_claims(device_token, start_time, end_time);
+
 -- Timetables table
 CREATE TABLE timetables (
     id INT AUTO_INCREMENT PRIMARY KEY,
