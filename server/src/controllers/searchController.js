@@ -1,5 +1,28 @@
 const db = require('../config/db');
 
+// Helper to convert day of week and time to datetime for conflict checking in the current week 
+function getDatetimeForDayAndTime(dayOfWeek, timeStr) {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const targetDayIndex = days.findIndex(d => d.toLowerCase() === dayOfWeek.toLowerCase());
+    if (targetDayIndex === -1) return null;
+
+    const now = new Date();
+    const currentDayIndex = now.getDay();
+    const diff = targetDayIndex - currentDayIndex;
+
+    const targetDate = new Date(now);
+    targetDate.setDate(now.getDate() + diff);
+
+    const [hours, minutes] = timeStr.split(':');
+    targetDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+
+    const year = targetDate.getFullYear();
+    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const date = String(targetDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${date} ${hours}:${minutes}:00`;
+}
+
+
 // Main availability search
 async function searchAvailable(req, res) {
     const { day_of_week, start_time, end_time, capacity, room_type } = req.query;
