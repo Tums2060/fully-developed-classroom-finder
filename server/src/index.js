@@ -15,6 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routing
 app.use('/api/public', require('./routes/public'));
+app.use('/api/claims', require('./routes/claims'));
 app.use('/api/admin/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 
