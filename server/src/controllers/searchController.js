@@ -37,19 +37,31 @@ async function searchAvailable(req, res) {
     }
 
     try {
+        const searchStart = getDatetimeForDayAndTime(day_of_week, start_time);
+        const searchEnd = getDatetimeForDayAndTime(day_of_week, end_time);
+
+        if (!searchStart || !searchEnd) {
+            return res.status(400).json({ error: 'Invalid day of week parameter' });
+        }
+
         let sql = `
-            SELECT c.id, c.name AS room_name, c.capacity, c.room_type, b.name AS building_name
+            SELECT c.id, c.name AS room_name, c.capacity, c.room_type, b.name AS building_name,
+                   (SELECT MIN(t.start_time) FROM timetables t WHERE t.classroom_id = c.id AND t.start_time >= ?) AS next_class_start 
             FROM classrooms c
             JOIN buildings b ON c.building_id = b.id
             WHERE c.id NOT IN (
                 SELECT classroom_id 
                 FROM timetables
-                WHERE day_of_week = ? 
-                  AND start_time < ? 
-                  AND end_time > ?
+                WHERE start_time < ? 
+                  AND end_time > ? 
             )
+            AND c.id NOT IN (
+                SELECT classroom_id 
+                FROM room_claims 
+                WHERE NOW() BETWEEN start_time AND end_time 
+            ) 
         `;
-        const params = [day_of_week, end_time, start_time];
+        const params = [searchStart, searchEnd, searchStart];
 
         if (capacity) {
             const minCapacity = parseInt(capacity, 10);
