@@ -62,6 +62,14 @@ async function createClaim(req, res) {
         const startTimeStr = formatMySQLDate(startTime);
         const endTimeStr = formatMySQLDate(endTime);
 
+        // Check 4, does requested time overlap with a timetable entry
+        const [timetableConflicts] = await db.query(
+            `SELECT COUNT(*) AS count FROM timetables WHERE classroom_id = ? AND start_time < ? AND end_time > ?`,
+            [classroom_id, endTimeStr, startTimeStr]
+        );
+        if (timetableConflicts[0].count > 0) {
+            return res.status(409).json({ error: 'The requested period overlaps with an official timetable entry' });
+        }
 
 
 
