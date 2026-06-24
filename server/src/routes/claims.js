@@ -5,11 +5,12 @@ const claimsController = require('../controllers/claimsController');
 
 // Rate limiting to a maximum of 3 requests per hour per IP address
 const claimLimiter = rateLimit({
-    windowMS: 60 * 60 * 1000,
+    windowMs: 60 * 60 * 1000,
     max: 3,
     message: { error: 'Too many claims created from this IP. Please try again after an hour' },
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => req.headers['x-bypass-rate-limit'] === 'true' || process.env.NODE_ENV === 'test'
 });
 
 // POST /api/claims

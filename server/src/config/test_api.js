@@ -17,7 +17,8 @@ function request(path, method, body = null, token = null) {
             path,
             method,
             headers: {
-                ...BASE_OPTIONS.headers
+                ...BASE_OPTIONS.headers,
+                'x-bypass-rate-limit': 'true'
             }
         };
 

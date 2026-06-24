@@ -3,6 +3,7 @@ USE classroom_finder2;
 
 -- Drop existing tables if they exist to start fresh (in order of reverse dependency)
 DROP TABLE IF EXISTS timetables;
+DROP TABLE IF EXISTS room_claims;
 DROP TABLE IF EXISTS units;
 DROP TABLE IF EXISTS classrooms;
 DROP TABLE IF EXISTS buildings;
