@@ -48,6 +48,13 @@ export default function SearchPage() {
     const [claimError, setClaimError] = useState('');
     const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
 
+    // Student room claims cancellation states
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [cancelPinInput, setCancelPinInput] = useState('');
+    const [cancelError, setCancelError] = useState('');
+    const [cancelSuccess, setCancelSuccess] = useState(false);
+    const [isSubmittingCancel, setIsSubmittingCancel] = useState(false);
+
     // Fetch available classrooms based on current filters
     const fetchAvailableRooms = async (dayVal = dayOfWeek, startVal = startTime, endVal = endTime, capVal = capacity, typeVal = roomType) => {
         setLoadingResults(true);
@@ -218,6 +225,38 @@ export default function SearchPage() {
         }
     };
 
+    const handleConfirmCancel = async (e) => {
+        e.preventDefault();
+        setCancelError('');
+        setIsSubmittingCancel(true);
+
+        try {
+            const response = await fetch('http://localhost:5000/api/claims/cancel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    cancel_pin: cancelPinInput
+                }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to cancel claim');
+            }
+
+            setCancelSuccess(true);
+            // Re-fetch rooms to update client view immediately
+            fetchAvailableRooms(dayOfWeek, startTime, endTime, capacity, roomType);
+        } catch (err) {
+            console.error('Cancel claim error:', err);
+            setCancelError(err.message || 'An error occurred while cancelling the claim.');
+        } finally {
+            setIsSubmittingCancel(false);
+        }
+    };
+
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const buildings = ['All', ...new Set(rooms.map(r => r.building_name))];
 
@@ -242,7 +281,13 @@ export default function SearchPage() {
                                 </span>
                             </Link>
                         </div>
-                        <div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setIsCancelModalOpen(true)}
+                                className="bg-blue-800 hover:bg-blue-700 text-white border border-blue-700 px-4 py-2 rounded-md text-sm font-medium transition-all-custom cursor-pointer"
+                            >
+                                Cancel Claim
+                            </button>
                             <Link
                                 href="/admin/login"
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-all-custom shadow"
@@ -638,6 +683,108 @@ export default function SearchPage() {
                                                 </>
                                             ) : (
                                                 'Confirm Claim'
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Cancel Claim Modal */}
+            {isCancelModalOpen && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full border border-slate-150 overflow-hidden">
+                        {/* Modal Header */}
+                        <div className="bg-blue-900 text-white px-6 py-4 flex justify-between items-center">
+                            <h3 className="font-bold text-base">Cancel Room Claim</h3>
+                            <button
+                                onClick={() => {
+                                    setIsCancelModalOpen(false);
+                                    setCancelPinInput('');
+                                    setCancelError('');
+                                    setCancelSuccess(false);
+                                }}
+                                className="text-white/80 hover:text-white font-bold text-xl cursor-pointer"
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6">
+                            {cancelSuccess ? (
+                                <div className="text-center space-y-4">
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 mb-2">
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    <h4 className="font-bold text-slate-800 text-lg">Claim Released!</h4>
+                                    <p className="text-sm text-slate-600">
+                                        Your classroom claim has been successfully cancelled and the room is now available for others.
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            setIsCancelModalOpen(false);
+                                            setCancelPinInput('');
+                                            setCancelError('');
+                                            setCancelSuccess(false);
+                                        }}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-md transition-colors w-full cursor-pointer text-sm shadow"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleConfirmCancel} className="space-y-5">
+                                    {cancelError && (
+                                        <div className="bg-rose-50 text-rose-600 p-3 rounded-md text-xs font-semibold border border-rose-100">
+                                            {cancelError}
+                                        </div>
+                                    )}
+
+                                    <div>
+                                        <label htmlFor="cancel_pin_input" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                            4-Digit Cancellation PIN
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="cancel_pin_input"
+                                            value={cancelPinInput}
+                                            onChange={(e) => setCancelPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                                            placeholder="e.g. 1234"
+                                            className="block w-full rounded-md border-slate-300 border p-2.5 text-center text-slate-900 text-lg font-bold tracking-widest bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="flex gap-3 pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsCancelModalOpen(false);
+                                                setCancelPinInput('');
+                                                setCancelError('');
+                                                setCancelSuccess(false);
+                                            }}
+                                            className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-md transition-colors cursor-pointer text-sm"
+                                        >
+                                            Dismiss
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmittingCancel || cancelPinInput.length !== 4}
+                                            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-2.5 rounded-md transition-colors cursor-pointer text-sm shadow flex justify-center items-center gap-2"
+                                        >
+                                            {isSubmittingCancel ? (
+                                                <>
+                                                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                                    Processing...
+                                                </>
+                                            ) : (
+                                                'Release Claim'
                                             )}
                                         </button>
                                     </div>

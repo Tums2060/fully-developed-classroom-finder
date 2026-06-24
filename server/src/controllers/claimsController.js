@@ -114,4 +114,38 @@ async function createClaim(req, res) {
     }
 }
 
-module.exports = { createClaim };
+// POST /api/claims/cancel
+async function cancelClaim(req, res) {
+    const { cancel_pin } = req.body;
+
+    if (!cancel_pin) {
+        return res.status(400).json({ error: 'Cancellation PIN is required.' });
+    }
+
+    try {
+        // Find the active claim with this PIN
+        const [claims] = await db.query(
+            'SELECT claim_id FROM room_claims WHERE cancel_pin = ? AND NOW() BETWEEN start_time AND end_time',
+            [cancel_pin]
+        );
+
+        if (claims.length === 0) {
+            return res.status(404).json({ error: 'No active claim found matching the provided PIN.' });
+        }
+
+        const claimId = claims[0].claim_id;
+
+        // Delete the active claim
+        await db.query('DELETE FROM room_claims WHERE claim_id = ?', [claimId]);
+
+        return res.json({ message: 'Claim successfully cancelled.' });
+    } catch (err) {
+        console.error('Error cancelling claim:', err);
+        return res.status(500).json({ error: 'Internal server error processing cancellation' });
+    }
+}
+
+module.exports = { 
+    createClaim,
+    cancelClaim
+};

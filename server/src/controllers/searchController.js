@@ -39,8 +39,10 @@ async function searchAvailable(req, res) {
     if (start_time >= end_time) {
         return res.status(400).json({ error: 'Start time must be strictly before end time' });
     }
-
     try {
+        const searchStartDT = getDatetimeForDayAndTime(day_of_week, start_time);
+        const searchEndDT = getDatetimeForDayAndTime(day_of_week, end_time);
+
         let sql = `
             SELECT c.id, c.name AS room_name, c.capacity, c.room_type, b.name AS building_name,
                    (SELECT MIN(t.start_time) FROM timetables t WHERE t.classroom_id = c.id AND t.day_of_week = ? AND t.start_time >= ?) AS next_class_start 
@@ -56,10 +58,19 @@ async function searchAvailable(req, res) {
             AND c.id NOT IN (
                 SELECT classroom_id 
                 FROM room_claims 
-                WHERE NOW() BETWEEN start_time AND end_time 
+                WHERE start_time < ? 
+                  AND end_time > ? 
             ) 
         `;
-        const params = [day_of_week, start_time, day_of_week, end_time, start_time];
+        const params = [
+            day_of_week, 
+            start_time, 
+            day_of_week, 
+            end_time, 
+            start_time, 
+            searchEndDT, 
+            searchStartDT
+        ];
 
         if (capacity) {
             const minCapacity = parseInt(capacity, 10);

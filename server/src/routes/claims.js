@@ -16,4 +16,7 @@ const claimLimiter = rateLimit({
 // POST /api/claims
 router.post('/', claimLimiter, claimsController.createClaim);
 
+// POST /api/claims/cancel
+router.post('/cancel', claimsController.cancelClaim);
+
 module.exports = router;

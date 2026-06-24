@@ -289,7 +289,7 @@ async function runTests() {
             unit_id: unitId
         }, token);
 
-        const claimTimetableId = claimTimetableRes.body.id;
+        let claimTimetableId = claimTimetableRes.body.id;
         console.log(`✓ Overlapping timetable class scheduled: ID ${claimTimetableId}`);
 
         console.log('Testing Claim Check 4: Overlap with official timetable...');
@@ -303,6 +303,79 @@ async function runTests() {
             console.log('✓ Success! Blocked claim overlapping timetable. Error:', claimResOverlap.body.error);
         } else {
             throw new Error(`Expected status 409 for timetable overlap, got ${claimResOverlap.status}: ${JSON.stringify(claimResOverlap.body)}`);
+        }
+
+        // Delete the overlapping timetable class so it doesn't block availability check later
+        console.log('Deleting overlapping class for Room 102 to prepare for availability checks...');
+        await request(`/api/admin/timetables/${claimTimetableId}`, 'DELETE', null, token);
+        claimTimetableId = null;
+
+
+
+        // F. Test active claim availability filter & cancel logic
+        const currentDayOfWeekName = daysOfWeek[new Date().getDay()] === 'Sunday' ? 'Monday' : daysOfWeek[new Date().getDay()];
+        const nowTime = new Date();
+        const formatTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+        const claimSearchStart = formatTime(new Date(Date.now() + 5 * 60000)); // 5 mins in future
+        const claimSearchEnd = formatTime(new Date(Date.now() + 40 * 60000)); // 40 mins in future
+        
+        console.log(`\nTesting Claim Availability Exclude check (searching during active claim period)...`);
+        const activeClaimSearchRes = await request(`/api/public/search/available?day_of_week=${currentDayOfWeekName}&start_time=${claimSearchStart}&end_time=${claimSearchEnd}`, 'GET');
+        const hasClaimedRoom = activeClaimSearchRes.body.some(room => room.id === smallClassroomId);
+        if (!hasClaimedRoom) {
+            console.log('✓ Success! Claimed room is correctly excluded from search results.');
+        } else {
+            throw new Error('Claimed room was incorrectly returned as available during its active claim period!');
+        }
+        
+        console.log('Testing Claim Availability Free check (searching other days/times)...');
+        // Search for next day
+        const nextDayIndex = (new Date().getDay() + 1) % 7;
+        const searchNextDayName = daysOfWeek[nextDayIndex] === 'Sunday' ? 'Monday' : daysOfWeek[nextDayIndex];
+        const freeClaimSearchRes = await request(`/api/public/search/available?day_of_week=${searchNextDayName}&start_time=${claimSearchStart}&end_time=${claimSearchEnd}`, 'GET');
+        
+        console.log('DEBUG: searchNextDayName =', searchNextDayName);
+        console.log('DEBUG: claimSearchStart =', claimSearchStart, 'claimSearchEnd =', claimSearchEnd);
+        console.log('DEBUG: smallClassroomId =', smallClassroomId);
+        console.log('DEBUG: freeClaimSearchRes.body =', JSON.stringify(freeClaimSearchRes.body, null, 2));
+
+        const hasClaimedRoomFree = freeClaimSearchRes.body.some(room => room.id === smallClassroomId);
+        if (hasClaimedRoomFree) {
+            console.log('✓ Success! Claimed room is correctly returned as available on a different day.');
+        } else {
+            throw new Error('Claimed room was incorrectly excluded on a different day!');
+        }
+
+        // Test cancellation with incorrect PIN
+        console.log('\nTesting Cancellation Check: Incorrect PIN...');
+        const cancelResBad = await request('/api/claims/cancel', 'POST', {
+            cancel_pin: '0000'
+        });
+        if (cancelResBad.status === 404) {
+            console.log('✓ Success! Blocked cancellation with incorrect PIN. Error:', cancelResBad.body.error);
+        } else {
+            throw new Error(`Expected status 404 for incorrect cancel PIN, got ${cancelResBad.status}`);
+        }
+
+        // Test cancellation with correct PIN
+        console.log('Testing Cancellation Check: Correct PIN...');
+        const cancelResGood = await request('/api/claims/cancel', 'POST', {
+            cancel_pin: claimResValid.body.cancel_pin
+        });
+        if (cancelResGood.status === 200) {
+            console.log('✓ Success! Claim successfully cancelled via API.');
+        } else {
+            throw new Error(`Expected status 200 for valid cancel PIN, got ${cancelResGood.status}: ${JSON.stringify(cancelResGood.body)}`);
+        }
+
+        // Verify the room is available again during the slot
+        console.log('Verifying classroom availability after cancellation...');
+        const postCancelSearchRes = await request(`/api/public/search/available?day_of_week=${currentDayOfWeekName}&start_time=${claimSearchStart}&end_time=${claimSearchEnd}`, 'GET');
+        const hasRoomAfterCancel = postCancelSearchRes.body.some(room => room.id === smallClassroomId);
+        if (hasRoomAfterCancel) {
+            console.log('✓ Success! Room is available again after claim cancellation.');
+        } else {
+            throw new Error('Room did not become available again after claim cancellation!');
         }
 
         // 8. Clean up test records (timetables must be deleted first due to RESTRICT)
