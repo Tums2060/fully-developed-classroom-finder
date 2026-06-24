@@ -62,10 +62,33 @@ async function createClaim(req, res) {
         const startTimeStr = formatMySQLDate(startTime);
         const endTimeStr = formatMySQLDate(endTime);
 
+        // Format time into MariaDB TIME format
+        const formatMySQLTime = (d) => {
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            const seconds = String(d.getSeconds()).padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        };
+
+        const claimStartTimeStr = formatMySQLTime(startTime);
+        const claimEndTimeStr = formatMySQLTime(endTime);
+
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const currentDayOfWeek = days[startTime.getDay()];
+
+        if (currentDayOfWeek === 'Sunday') {
+            return res.status(400).json({ error: 'Room claiming is not supported on Sunday.' });
+        }
+
         // Check 4, does requested time overlap with a timetable entry
         const [timetableConflicts] = await db.query(
-            `SELECT COUNT(*) AS count FROM timetables WHERE classroom_id = ? AND start_time < ? AND end_time > ?`,
-            [classroom_id, endTimeStr, startTimeStr]
+            `SELECT COUNT(*) AS count 
+             FROM timetables 
+             WHERE classroom_id = ? 
+               AND day_of_week = ? 
+               AND start_time < ? 
+               AND end_time > ?`,
+            [classroom_id, currentDayOfWeek, claimEndTimeStr, claimStartTimeStr]
         );
         if (timetableConflicts[0].count > 0) {
             return res.status(409).json({ error: 'The requested period overlaps with an official timetable entry' });

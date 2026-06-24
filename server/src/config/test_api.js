@@ -265,9 +265,11 @@ async function runTests() {
             throw new Error(`Expected status 429 for duplicate active claim, got ${claimResDuplicate.status}: ${JSON.stringify(claimResDuplicate.body)}`);
         }
 
-        // F. Check 4: Overlap with official timetable entry -> should be 409
         const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const currentDayName = daysOfWeek[new Date().getDay()];
+        let currentDayName = daysOfWeek[new Date().getDay()];
+        if (currentDayName === 'Sunday') {
+            currentDayName = 'Monday';
+        }
         
         const classStart = new Date(Date.now() - 15 * 60000);
         const classEnd = new Date(Date.now() + 45 * 60000);

@@ -31,28 +31,26 @@ async function searchAvailable(req, res) {
         return res.status(400).json({ error: 'day_of_week, start_time, and end_time are required parameters' });
     }
 
+    if (day_of_week.toLowerCase() === 'sunday') {
+        return res.status(400).json({ error: 'Searches on Sunday are not supported' });
+    }
+
     // Time validation (start_time < end_time)
     if (start_time >= end_time) {
         return res.status(400).json({ error: 'Start time must be strictly before end time' });
     }
 
     try {
-        const searchStart = getDatetimeForDayAndTime(day_of_week, start_time);
-        const searchEnd = getDatetimeForDayAndTime(day_of_week, end_time);
-
-        if (!searchStart || !searchEnd) {
-            return res.status(400).json({ error: 'Invalid day of week parameter' });
-        }
-
         let sql = `
             SELECT c.id, c.name AS room_name, c.capacity, c.room_type, b.name AS building_name,
-                   (SELECT MIN(t.start_time) FROM timetables t WHERE t.classroom_id = c.id AND t.start_time >= ?) AS next_class_start 
+                   (SELECT MIN(t.start_time) FROM timetables t WHERE t.classroom_id = c.id AND t.day_of_week = ? AND t.start_time >= ?) AS next_class_start 
             FROM classrooms c
             JOIN buildings b ON c.building_id = b.id
             WHERE c.id NOT IN (
                 SELECT classroom_id 
                 FROM timetables
-                WHERE start_time < ? 
+                WHERE day_of_week = ? 
+                  AND start_time < ? 
                   AND end_time > ? 
             )
             AND c.id NOT IN (
@@ -61,7 +59,7 @@ async function searchAvailable(req, res) {
                 WHERE NOW() BETWEEN start_time AND end_time 
             ) 
         `;
-        const params = [searchStart, searchEnd, searchStart];
+        const params = [day_of_week, start_time, day_of_week, end_time, start_time];
 
         if (capacity) {
             const minCapacity = parseInt(capacity, 10);
@@ -79,7 +77,16 @@ async function searchAvailable(req, res) {
         sql += ' ORDER BY b.name ASC, c.name ASC';
 
         const [rows] = await db.query(sql, params);
-        return res.json(rows);
+        
+        // Convert next_class_start (which is a TIME string or null) into a full DATETIME string
+        const processedRows = rows.map(row => {
+            if (row.next_class_start) {
+                row.next_class_start = getDatetimeForDayAndTime(day_of_week, row.next_class_start);
+            }
+            return row;
+        });
+
+        return res.json(processedRows);
     } catch (err) {
         console.error('Search available rooms error:', err);
         return res.status(500).json({ error: 'Internal server error performing classroom search' });

@@ -53,6 +53,7 @@ export default function TimetablesPage() {
         lecturerConflict: false
     });
     const [timeValidationError, setTimeValidationError] = useState(false);
+    const [timeValidationMessage, setTimeValidationMessage] = useState('');
     const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
 
     // general feedback alert
@@ -108,10 +109,12 @@ export default function TimetablesPage() {
 
             if (start_time >= end_time) {
                 setTimeValidationError(true);
+                setTimeValidationMessage('Start time must be strictly before end time.');
                 setConflicts({ roomConflict: false, groupConflict: false, lecturerConflict: false });
                 return;
             } else {
                 setTimeValidationError(false);
+                setTimeValidationMessage('');
             }
 
             setIsCheckingConflicts(true);
@@ -132,8 +135,11 @@ export default function TimetablesPage() {
                     const data = await res.json();
                     if (data.timeValidationError) {
                         setTimeValidationError(true);
+                        setTimeValidationMessage(data.timeValidationMessage || 'Start time must be strictly before end time.');
                         setConflicts({ roomConflict: false, groupConflict: false, lecturerConflict: false });
                     } else {
+                        setTimeValidationError(false);
+                        setTimeValidationMessage('');
                         setConflicts(data.conflicts);
                     }
                 }
@@ -226,7 +232,7 @@ export default function TimetablesPage() {
         }
     };
 
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
     const filteredCourses = form.school_id 
         ? courses.filter(c => c.school_id === parseInt(form.school_id, 10)) 
@@ -406,7 +412,7 @@ export default function TimetablesPage() {
                                         <AlertTriangle className="h-4.5 w-4.5 text-rose-600" /> Overlap Conflict Found
                                     </h4>
                                     <ul className="list-disc list-inside text-xs space-y-1 pl-1 font-medium text-rose-700">
-                                        {timeValidationError && <li>Start time must be before end time.</li>}
+                                        {timeValidationError && <li>{timeValidationMessage}</li>}
                                         {conflicts.roomConflict && <li>The classroom is already booked for this timeslot.</li>}
                                         {conflicts.groupConflict && <li>The student group has another class scheduled during this time.</li>}
                                         {conflicts.lecturerConflict && <li>The lecturer is already teaching another class during this time.</li>}

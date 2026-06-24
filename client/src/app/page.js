@@ -81,10 +81,9 @@ export default function SearchPage() {
 
     // Initialize defaults and run initial search on mount
     useEffect(() => {
-        const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const weekdays = ['Monday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const currentDayIndex = new Date().getDay();
-        // If Sunday, default to Monday
-        const defaultDay = currentDayIndex === 0 ? 'Monday' : weekdays[currentDayIndex];
+        const defaultDay = weekdays[currentDayIndex];
         setDayOfWeek(defaultDay);
 
         const fetchRoomTypesAndInitialRooms = async () => {
@@ -219,7 +218,7 @@ export default function SearchPage() {
         }
     };
 
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const buildings = ['All', ...new Set(rooms.map(r => r.building_name))];
 
     return (
