@@ -5,13 +5,13 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '../../context/AuthContext';
-import { 
-    LayoutDashboard, 
-    Building2, 
-    GraduationCap, 
-    CalendarClock, 
-    LineChart, 
-    Settings, 
+import {
+    LayoutDashboard,
+    Building2,
+    GraduationCap,
+    CalendarClock,
+    LineChart,
+    Settings,
     LogOut,
     UserCheck,
     Loader
@@ -72,7 +72,7 @@ export default function AdminLayout({ children }) {
                             className="h-7.5 w-auto object-contain"
                             priority
                         />
-                        <span className="font-bold text-sm tracking-tight text-white">Classroom Finder</span>
+                        <span className="font-bold text-sm tracking-tight text-white">Classroom Management System</span>
                     </div>
 
                     {/* Navigation Menu */}
@@ -84,11 +84,10 @@ export default function AdminLayout({ children }) {
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className={`group flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all-custom ${
-                                        isActive
+                                    className={`group flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all-custom ${isActive
                                             ? 'bg-blue-600 text-white shadow'
                                             : 'text-blue-100 hover:bg-blue-800 hover:text-white'
-                                    }`}
+                                        }`}
                                 >
                                     <Icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-blue-300 group-hover:text-white'}`} />
                                     <span>{item.name}</span>

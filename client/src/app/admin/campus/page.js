@@ -15,6 +15,14 @@ export default function CampusPage() {
     const [classrooms, setClassrooms] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Active selection state for classroom drill-downs
+    const [activeBuildingForClassrooms, setActiveBuildingForClassrooms] = useState(null);
+
+    // Reset selection state when tab changes
+    useEffect(() => {
+        setActiveBuildingForClassrooms(null);
+    }, [activeTab]);
+
     // Feedback alerts
     const [feedback, setFeedback] = useState({ type: '', message: '' });
 
@@ -97,6 +105,9 @@ export default function CampusPage() {
             if (!res.ok) throw new Error(data.error || 'Failed to delete building');
 
             triggerFeedback('success', 'Building deleted successfully.');
+            if (activeBuildingForClassrooms && activeBuildingForClassrooms.id === id) {
+                setActiveBuildingForClassrooms(null);
+            }
             fetchData();
         } catch (err) {
             triggerFeedback('error', err.message);
@@ -266,80 +277,179 @@ export default function CampusPage() {
                 </div>
             ) : (
                 /* --- CLASSROOMS TAB --- */
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <div className="space-y-6">
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden p-6 flex items-center justify-between">
                         <div>
-                            <h3 className="font-bold text-slate-800">Classrooms Directory</h3>
-                            <p className="text-slate-500 text-xs mt-0.5">Manage details of physical academic learning zones.</p>
+                            <h3 className="font-bold text-slate-800 text-lg">Classrooms Directory</h3>
+                            <p className="text-slate-500 text-xs mt-0.5">Manage details of physical academic learning zones grouped by building.</p>
                         </div>
                         <button
                             onClick={() => {
                                 setClassroomForm({ id: null, building_id: buildings[0]?.id || '', name: '', capacity: '', room_type: 'Lecture Hall' });
                                 setShowClassroomModal(true);
                             }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm flex items-center gap-1.5 transition-all shadow-sm shadow-blue-100 cursor-pointer"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm flex items-center gap-1.5 transition-all shadow shadow-blue-100 cursor-pointer"
                             disabled={buildings.length === 0}
                         >
                             <Plus className="h-4 w-4" /> Add Classroom
                         </button>
                     </div>
 
-                    {classrooms.length === 0 ? (
-                        <div className="text-center py-16 text-slate-400 text-sm">
-                            {buildings.length === 0
-                                ? "You must add a building before creating classrooms."
-                                : "No classrooms configured. Click 'Add Classroom' to begin."
-                            }
+                    {buildings.length === 0 ? (
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center text-slate-400 text-sm">
+                            You must add a building before managing classrooms.
                         </div>
                     ) : (
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-xs uppercase">
-                                    <th className="py-3.5 px-6">Room</th>
-                                    <th className="py-3.5 px-6">Building</th>
-                                    <th className="py-3.5 px-6">Capacity</th>
-                                    <th className="py-3.5 px-6">Room Type</th>
-                                    <th className="py-3.5 px-6 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 text-sm">
-                                {classrooms.map((c) => (
-                                    <tr key={c.id} className="hover:bg-slate-50/55 transition-all">
-                                        <td className="py-4 px-6 font-bold text-slate-800">{c.name}</td>
-                                        <td className="py-4 px-6 text-slate-600 font-semibold">{c.building_name}</td>
-                                        <td className="py-4 px-6 text-slate-600">{c.capacity} Seats</td>
-                                        <td className="py-4 px-6">
-                                            <span className="bg-slate-100 text-slate-800 text-xs font-semibold px-2.5 py-1 rounded-full capitalize">
-                                                {c.room_type}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {buildings.map((b) => {
+                                const buildingRooms = classrooms.filter(r => r.building_id === b.id);
+                                const totalCapacity = buildingRooms.reduce((sum, r) => sum + r.capacity, 0);
+                                return (
+                                    <div
+                                        key={b.id}
+                                        onClick={() => setActiveBuildingForClassrooms(b)}
+                                        className="group cursor-pointer bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg hover:border-blue-500 hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between h-44"
+                                    >
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2 text-blue-600">
+                                                <Building2 className="h-5 w-5" />
+                                                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Building</span>
+                                            </div>
+                                            <h4 className="font-bold text-slate-800 text-base line-clamp-2 group-hover:text-blue-600 transition-colors">
+                                                {b.name}
+                                            </h4>
+                                        </div>
+                                        <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-semibold">
+                                            <div className="flex flex-col gap-0.5">
+                                                <span>{buildingRooms.length} {buildingRooms.length === 1 ? 'Room' : 'Rooms'}</span>
+                                                <span className="text-[10px] text-slate-400 font-normal">{totalCapacity} Total Seats</span>
+                                            </div>
+                                            <span className="text-blue-600 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                                Manage Rooms &rarr;
                                             </span>
-                                        </td>
-                                        <td className="py-4 px-6 text-right space-x-2">
-                                            <button
-                                                onClick={() => {
-                                                    setClassroomForm({
-                                                        id: c.id,
-                                                        building_id: c.building_id,
-                                                        name: c.name,
-                                                        capacity: c.capacity,
-                                                        room_type: c.room_type
-                                                    });
-                                                    setShowClassroomModal(true);
-                                                }}
-                                                className="inline-flex items-center gap-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 p-2 rounded-lg text-xs font-semibold transition"
-                                            >
-                                                <Edit2 className="h-3.5 w-3.5" /> Edit
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteClassroom(c.id)}
-                                                className="inline-flex items-center gap-1 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 p-2 rounded-lg text-xs font-semibold transition"
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5" /> Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Classrooms List Modal for Selected Building */}
+                    {activeBuildingForClassrooms && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                            <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full border border-slate-100 overflow-hidden flex flex-col max-h-[85vh]">
+                                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                                            <Building2 className="h-6 w-6" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                                Classrooms in {activeBuildingForClassrooms.name}
+                                            </h3>
+                                            <div className="flex items-center gap-2 text-slate-500 text-xs mt-0.5">
+                                                <span>{classrooms.filter(c => c.building_id === activeBuildingForClassrooms.id).length} rooms registered</span>
+                                                <span>•</span>
+                                                <button
+                                                    onClick={() => {
+                                                        setBuildingForm({ id: activeBuildingForClassrooms.id, name: activeBuildingForClassrooms.name });
+                                                        setShowBuildingModal(true);
+                                                    }}
+                                                    className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 transition"
+                                                >
+                                                    <Edit2 className="h-3 w-3" /> Edit Building Name
+                                                </button>
+                                                <span>•</span>
+                                                <button
+                                                    onClick={async () => {
+                                                        const buildingId = activeBuildingForClassrooms.id;
+                                                        await handleDeleteBuilding(buildingId);
+                                                    }}
+                                                    className="text-rose-600 hover:text-rose-800 font-bold flex items-center gap-1 transition"
+                                                >
+                                                    <Trash2 className="h-3 w-3" /> Delete Building
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setActiveBuildingForClassrooms(null)}
+                                        className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition"
+                                    >
+                                        <X className="h-5 w-5" />
+                                    </button>
+                                </div>
+
+                                <div className="p-6 overflow-y-auto flex-grow bg-slate-50/50">
+                                    {classrooms.filter(c => c.building_id === activeBuildingForClassrooms.id).length === 0 ? (
+                                        <div className="text-center py-12 text-slate-400 text-sm">
+                                            No classrooms configured inside this building yet.
+                                        </div>
+                                    ) : (
+                                        <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                                            <table className="w-full text-left border-collapse bg-white">
+                                                <thead>
+                                                    <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase">
+                                                        <th className="py-3 px-5">Room</th>
+                                                        <th className="py-3 px-5">Capacity</th>
+                                                        <th className="py-3 px-5">Room Type</th>
+                                                        <th className="py-3 px-5 text-right">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-200 text-sm">
+                                                    {classrooms.filter(c => c.building_id === activeBuildingForClassrooms.id).map((c) => (
+                                                        <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
+                                                            <td className="py-3.5 px-5 font-bold text-slate-800">{c.name}</td>
+                                                            <td className="py-3.5 px-5 text-slate-600 font-semibold">{c.capacity} Seats</td>
+                                                            <td className="py-3.5 px-5">
+                                                                <span className="bg-slate-100 text-slate-800 text-xs font-semibold px-2.5 py-1 rounded-full capitalize">
+                                                                    {c.room_type}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-3.5 px-5 text-right space-x-2 whitespace-nowrap">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setClassroomForm({
+                                                                            id: c.id,
+                                                                            building_id: c.building_id,
+                                                                            name: c.name,
+                                                                            capacity: c.capacity,
+                                                                            room_type: c.room_type
+                                                                        });
+                                                                        setShowClassroomModal(true);
+                                                                    }}
+                                                                    className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 p-2 rounded-lg text-xs font-semibold transition"
+                                                                    title="Edit Classroom"
+                                                                >
+                                                                    <Edit2 className="h-3.5 w-3.5" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteClassroom(c.id)}
+                                                                    className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 p-2 rounded-lg text-xs font-semibold transition"
+                                                                    title="Delete Classroom"
+                                                                >
+                                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="px-6 py-4 border-t border-slate-200 flex justify-end bg-slate-50 flex-shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveBuildingForClassrooms(null)}
+                                        className="px-4 py-2 border border-slate-200 hover:bg-slate-100 rounded-lg text-sm text-slate-600 font-semibold transition"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
             )}

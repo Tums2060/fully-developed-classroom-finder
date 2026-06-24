@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { GraduationCap, Landmark, BookOpen, Users2, ShieldAlert, Plus, Edit2, Trash2, X, AlertTriangle, CheckCircle, Book } from 'lucide-react';
+import { GraduationCap, Landmark, BookOpen, Users2, ShieldAlert, Plus, Edit2, Trash2, X, AlertTriangle, CheckCircle, Book, ChevronRight } from 'lucide-react';
 
 export default function AcademicsPage() {
     const { authFetch } = useAuth();
@@ -17,6 +17,18 @@ export default function AcademicsPage() {
     const [lecturers, setLecturers] = useState([]);
     const [units, setUnits] = useState([]);
     const [loading, setLoading] = useState(true);
+    
+    // Active selection states for UI drill-downs
+    const [activeSchoolForCourses, setActiveSchoolForCourses] = useState(null);
+    const [activeSchoolForGroups, setActiveSchoolForGroups] = useState(null);
+    const [activeCourseForGroups, setActiveCourseForGroups] = useState(null);
+
+    // Reset drill-down states when tab changes
+    useEffect(() => {
+        setActiveSchoolForCourses(null);
+        setActiveSchoolForGroups(null);
+        setActiveCourseForGroups(null);
+    }, [activeTab]);
     
     // Feedback Alerts
     const [feedback, setFeedback] = useState({ type: '', message: '' });
@@ -403,11 +415,11 @@ export default function AcademicsPage() {
 
                     {/* --- COURSES TAB --- */}
                     {activeTab === 'courses' && (
-                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <div className="space-y-6">
+                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden p-6 flex items-center justify-between">
                                 <div>
-                                    <h3 className="font-bold text-slate-800">Academic Courses</h3>
-                                    <p className="text-slate-500 text-xs mt-0.5">Degrees and qualifications sorted by school.</p>
+                                    <h3 className="font-bold text-slate-800 text-lg">Academic Courses</h3>
+                                    <p className="text-slate-500 text-xs mt-0.5">Degrees and qualifications sorted by school. Click a school to manage its courses.</p>
                                 </div>
                                 <button
                                     onClick={() => {
@@ -420,37 +432,133 @@ export default function AcademicsPage() {
                                     <Plus className="h-4 w-4" /> Add Course
                                 </button>
                             </div>
-                            {courses.length === 0 ? (
-                                <div className="text-center py-12 text-slate-400 text-sm">No courses added.</div>
+
+                            {schools.length === 0 ? (
+                                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center text-slate-400 text-sm">
+                                    No schools found. Please add a school first.
+                                </div>
                             ) : (
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-xs uppercase"><th className="py-3.5 px-6">Course Name</th><th className="py-3.5 px-6">School</th><th className="py-3.5 px-6 text-right">Actions</th></tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100 text-sm">
-                                        {courses.map(c => (
-                                            <tr key={c.id} className="hover:bg-slate-50/50">
-                                                <td className="py-4 px-6 font-bold text-slate-800">{c.name}</td>
-                                                <td className="py-4 px-6 text-slate-600 font-semibold">{c.school_name}</td>
-                                                <td className="py-4 px-6 text-right space-x-2">
-                                                    <button onClick={() => { setCourseForm({ id: c.id, school_id: c.school_id, name: c.name }); setShowCourseModal(true); }} className="bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 p-2 rounded-lg text-xs font-semibold"><Edit2 className="h-3.5 w-3.5" /></button>
-                                                    <button onClick={() => handleDeleteCourse(c.id)} className="bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 p-2 rounded-lg text-xs font-semibold"><Trash2 className="h-3.5 w-3.5" /></button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {schools.map(s => {
+                                        const schoolCourses = courses.filter(c => c.school_id === s.id);
+                                        return (
+                                            <div
+                                                key={s.id}
+                                                onClick={() => setActiveSchoolForCourses(s)}
+                                                className="group cursor-pointer bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg hover:border-blue-500 hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between h-40"
+                                            >
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center gap-2 text-blue-600">
+                                                        <Landmark className="h-5 w-5" />
+                                                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">School</span>
+                                                    </div>
+                                                    <h4 className="font-bold text-slate-800 text-base line-clamp-2 group-hover:text-blue-600 transition-colors">
+                                                        {s.name}
+                                                    </h4>
+                                                </div>
+                                                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                                                    <span className="text-xs font-semibold text-slate-500">
+                                                        {schoolCourses.length} {schoolCourses.length === 1 ? 'Course' : 'Courses'}
+                                                    </span>
+                                                    <span className="text-blue-600 text-xs font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                                        View Courses &rarr;
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {/* Courses List Modal for Selected School */}
+                            {activeSchoolForCourses && (
+                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                                    <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full border border-slate-100 overflow-hidden flex flex-col max-h-[85vh]">
+                                        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                                    <Landmark className="h-5 w-5 text-blue-600" />
+                                                    Courses in {activeSchoolForCourses.name}
+                                                </h3>
+                                                <p className="text-slate-500 text-xs mt-0.5">
+                                                    Total of {courses.filter(c => c.school_id === activeSchoolForCourses.id).length} courses registered.
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => setActiveSchoolForCourses(null)}
+                                                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition"
+                                            >
+                                                <X className="h-5 w-5" />
+                                            </button>
+                                        </div>
+
+                                        <div className="p-6 overflow-y-auto flex-grow bg-slate-50/50">
+                                            {courses.filter(c => c.school_id === activeSchoolForCourses.id).length === 0 ? (
+                                                <div className="text-center py-12 text-slate-400 text-sm">
+                                                    No courses registered under this school yet.
+                                                </div>
+                                            ) : (
+                                                <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                                                    <table className="w-full text-left border-collapse">
+                                                        <thead>
+                                                            <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase">
+                                                                <th className="py-3 px-5">Course Name</th>
+                                                                <th className="py-3 px-5 text-right">Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-200 text-sm bg-white">
+                                                            {courses.filter(c => c.school_id === activeSchoolForCourses.id).map(c => (
+                                                                <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
+                                                                    <td className="py-3.5 px-5 font-bold text-slate-800">{c.name}</td>
+                                                                    <td className="py-3.5 px-5 text-right space-x-2 whitespace-nowrap">
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setCourseForm({ id: c.id, school_id: c.school_id, name: c.name });
+                                                                                setShowCourseModal(true);
+                                                                            }}
+                                                                            className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 p-2 rounded-lg text-xs font-semibold transition"
+                                                                            title="Edit Course"
+                                                                        >
+                                                                            <Edit2 className="h-3.5 w-3.5" />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => handleDeleteCourse(c.id)}
+                                                                            className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 p-2 rounded-lg text-xs font-semibold transition"
+                                                                            title="Delete Course"
+                                                                        >
+                                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="px-6 py-4 border-t border-slate-200 flex justify-end bg-slate-50 flex-shrink-0">
+                                            <button
+                                                type="button"
+                                                onClick={() => setActiveSchoolForCourses(null)}
+                                                className="px-4 py-2 border border-slate-200 hover:bg-slate-100 rounded-lg text-sm text-slate-600 font-semibold transition"
+                                            >
+                                                Close
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     )}
 
                     {/* --- STUDENT GROUPS TAB --- */}
                     {activeTab === 'groups' && (
-                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <div className="space-y-6">
+                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden p-6 flex items-center justify-between">
                                 <div>
-                                    <h3 className="font-bold text-slate-800">Student Groups</h3>
-                                    <p className="text-slate-500 text-xs mt-0.5">Academic cohorts and study levels.</p>
+                                    <h3 className="font-bold text-slate-800 text-lg">Student Groups</h3>
+                                    <p className="text-slate-500 text-xs mt-0.5">Academic cohorts and study levels. Select a school to view courses and student groups.</p>
                                 </div>
                                 <button
                                     onClick={() => {
@@ -463,26 +571,187 @@ export default function AcademicsPage() {
                                     <Plus className="h-4 w-4" /> Add Group
                                 </button>
                             </div>
-                            {groups.length === 0 ? (
-                                <div className="text-center py-12 text-slate-400 text-sm">No student groups configured.</div>
+
+                            {schools.length === 0 ? (
+                                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center text-slate-400 text-sm">
+                                    No schools found. Please add a school first.
+                                </div>
                             ) : (
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-xs uppercase"><th className="py-3.5 px-6">Group Name</th><th className="py-3.5 px-6">Course Name</th><th className="py-3.5 px-6 text-right">Actions</th></tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100 text-sm">
-                                        {groups.map(g => (
-                                            <tr key={g.id} className="hover:bg-slate-50/50">
-                                                <td className="py-4 px-6 font-bold text-slate-800">{g.name}</td>
-                                                <td className="py-4 px-6 text-slate-600 font-semibold">{g.course_name}</td>
-                                                <td className="py-4 px-6 text-right space-x-2">
-                                                    <button onClick={() => { setGroupForm({ id: g.id, course_id: g.course_id, name: g.name }); setShowGroupModal(true); }} className="bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 p-2 rounded-lg text-xs font-semibold"><Edit2 className="h-3.5 w-3.5" /></button>
-                                                    <button onClick={() => handleDeleteGroup(g.id)} className="bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 p-2 rounded-lg text-xs font-semibold"><Trash2 className="h-3.5 w-3.5" /></button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {schools.map(s => {
+                                        const schoolCourses = courses.filter(c => c.school_id === s.id);
+                                        const schoolGroups = groups.filter(g => schoolCourses.some(c => c.id === g.course_id));
+                                        return (
+                                            <div
+                                                key={s.id}
+                                                onClick={() => {
+                                                    setActiveSchoolForGroups(s);
+                                                    setActiveCourseForGroups(null);
+                                                }}
+                                                className="group cursor-pointer bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg hover:border-blue-500 hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between h-40"
+                                            >
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center gap-2 text-blue-600">
+                                                        <Users2 className="h-5 w-5" />
+                                                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">School</span>
+                                                    </div>
+                                                    <h4 className="font-bold text-slate-800 text-base line-clamp-2 group-hover:text-blue-600 transition-colors">
+                                                        {s.name}
+                                                    </h4>
+                                                </div>
+                                                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                                                    <span className="text-xs font-semibold text-slate-500">
+                                                        {schoolGroups.length} {schoolGroups.length === 1 ? 'Cohort' : 'Cohorts'} in {schoolCourses.length} {schoolCourses.length === 1 ? 'Course' : 'Courses'}
+                                                    </span>
+                                                    <span className="text-blue-600 text-xs font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                                        View Groups &rarr;
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {/* Drill-down Modal for Student Groups */}
+                            {activeSchoolForGroups && (
+                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                                    <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full border border-slate-100 overflow-hidden flex flex-col max-h-[85vh]">
+                                        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                                    <Users2 className="h-5 w-5 text-blue-600" />
+                                                    {activeCourseForGroups ? `Groups for ${activeCourseForGroups.name}` : `Courses in ${activeSchoolForGroups.name}`}
+                                                </h3>
+                                                <p className="text-slate-500 text-xs mt-0.5">
+                                                    {activeCourseForGroups 
+                                                        ? `Filtered to registered cohorts.` 
+                                                        : `Select a course to view its student groups.`}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    setActiveSchoolForGroups(null);
+                                                    setActiveCourseForGroups(null);
+                                                }}
+                                                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition"
+                                            >
+                                                <X className="h-5 w-5" />
+                                            </button>
+                                        </div>
+
+                                        <div className="p-6 overflow-y-auto flex-grow bg-slate-50/50">
+                                            {/* Course Selection Level */}
+                                            {!activeCourseForGroups ? (
+                                                <div className="space-y-3">
+                                                    {courses.filter(c => c.school_id === activeSchoolForGroups.id).length === 0 ? (
+                                                        <div className="text-center py-12 text-slate-400 text-sm">
+                                                            No courses registered in this school.
+                                                        </div>
+                                                    ) : (
+                                                        courses.filter(c => c.school_id === activeSchoolForGroups.id).map(c => {
+                                                            const courseGroupsCount = groups.filter(g => g.course_id === c.id).length;
+                                                            return (
+                                                                <button
+                                                                    key={c.id}
+                                                                    onClick={() => setActiveCourseForGroups(c)}
+                                                                    className="w-full text-left p-4 rounded-xl border border-slate-200 bg-white hover:bg-blue-50/40 hover:border-blue-300 transition-all flex items-center justify-between group/btn"
+                                                                >
+                                                                    <div>
+                                                                        <span className="font-bold text-slate-800 block group-hover/btn:text-blue-700 transition-colors">
+                                                                            {c.name}
+                                                                        </span>
+                                                                        <span className="text-xs text-slate-500 font-semibold mt-0.5">
+                                                                            {courseGroupsCount} {courseGroupsCount === 1 ? 'Student Group' : 'Student Groups'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <ChevronRight className="h-5 w-5 text-slate-400 group-hover/btn:text-blue-600 group-hover/btn:translate-x-1 transition-all" />
+                                                                </button>
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                /* Groups Listing Level */
+                                                <div className="space-y-4">
+                                                    <button
+                                                        onClick={() => setActiveCourseForGroups(null)}
+                                                        className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 transition"
+                                                    >
+                                                        &larr; Back to Courses
+                                                    </button>
+
+                                                    {groups.filter(g => g.course_id === activeCourseForGroups.id).length === 0 ? (
+                                                        <div className="text-center py-12 text-slate-400 text-sm border border-dashed border-slate-200 rounded-xl bg-slate-50">
+                                                            No student groups registered under this course yet.
+                                                        </div>
+                                                    ) : (
+                                                        <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                                                            <table className="w-full text-left border-collapse">
+                                                                <thead>
+                                                                    <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase">
+                                                                        <th className="py-3 px-5">Group Name</th>
+                                                                        <th className="py-3 px-5 text-right">Actions</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody className="divide-y divide-slate-200 text-sm bg-white">
+                                                                    {groups.filter(g => g.course_id === activeCourseForGroups.id).map(g => (
+                                                                        <tr key={g.id} className="hover:bg-slate-50/80 transition-colors">
+                                                                            <td className="py-3.5 px-5 font-bold text-slate-800">{g.name}</td>
+                                                                            <td className="py-3.5 px-5 text-right space-x-2 whitespace-nowrap">
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        setGroupForm({ id: g.id, course_id: g.course_id, name: g.name });
+                                                                                        setShowGroupModal(true);
+                                                                                    }}
+                                                                                    className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 p-2 rounded-lg text-xs font-semibold transition"
+                                                                                    title="Edit Group"
+                                                                                >
+                                                                                    <Edit2 className="h-3.5 w-3.5" />
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() => handleDeleteGroup(g.id)}
+                                                                                    className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 p-2 rounded-lg text-xs font-semibold transition"
+                                                                                    title="Delete Group"
+                                                                                >
+                                                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                                                </button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="px-6 py-4 border-t border-slate-200 flex justify-between bg-slate-50 flex-shrink-0">
+                                            {activeCourseForGroups ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setActiveCourseForGroups(null)}
+                                                    className="px-4 py-2 border border-slate-200 hover:bg-slate-100 rounded-lg text-sm text-slate-600 font-semibold transition"
+                                                >
+                                                    Back to List
+                                                </button>
+                                            ) : (
+                                                <div />
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setActiveSchoolForGroups(null);
+                                                    setActiveCourseForGroups(null);
+                                                }}
+                                                className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-sm font-semibold transition"
+                                            >
+                                                Close
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     )}
