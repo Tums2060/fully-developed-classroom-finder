@@ -13,6 +13,7 @@ import {
     SlidersHorizontal,
     ShieldAlert
 } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function SearchPage() {
     // Search Parameter states
@@ -36,6 +37,16 @@ export default function SearchPage() {
     // Client filtering & sorting states
     const [selectedBuilding, setSelectedBuilding] = useState('All');
     const [sortBy, setSortBy] = useState('name'); // name, capacity-desc, capacity-asc
+
+    // Student room claiming states 
+    const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
+    const [selectedRoomForClaim, setSelectedRoomForClaim] = useState(null);
+    const [groupSize, setGroupSize] = useState(1);
+    const [duration, setDuration] = useState(30);
+    const [claimSuccess, setClaimSuccess] = useState(false);
+    const [cancellationPin, setCancellationPin] = useState('');
+    const [claimError, setClaimError] = useState('');
+    const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
 
     // Fetch available classrooms based on current filters
     const fetchAvailableRooms = async (dayVal = dayOfWeek, startVal = startTime, endVal = endTime, capVal = capacity, typeVal = roomType) => {
