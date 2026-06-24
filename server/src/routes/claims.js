@@ -1,0 +1,18 @@
+const express = require('express');
+const router = express.Router();
+const rateLimit = require('express-rate-limit');
+const claimsController = require('../controllers/claimsController');
+
+// Rate limiting to a maximum of 3 requests per hour per IP address
+const claimLimiter = rateLimit({
+    windowMS: 60 * 60 * 1000,
+    max: 3,
+    message: { error: 'Too many claims created from this IP. Please try again after an hour' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// POST /api/claims
+router.post('/', claimLimiter, claimsController.createClaim);
+
+module.exports = router;
