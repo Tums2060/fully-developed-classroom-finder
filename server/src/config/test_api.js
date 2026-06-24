@@ -192,14 +192,132 @@ async function runTests() {
             throw new Error('Room 101 was not returned as available during a free slot!');
         }
 
+        // 7.5 Test Room Claiming System
+        console.log('\n--- TESTING ROOM CLAIMING SYSTEM ---');
+        
+        // A. Create a small classroom (capacity 20)
+        console.log('Creating testing small classroom (capacity 20)...');
+        const smallClassroomRes = await request('/api/admin/classrooms', 'POST', {
+            building_id: buildingId,
+            name: 'Room 102',
+            capacity: 20,
+            room_type: 'Discussion Room'
+        }, token);
+        const smallClassroomId = smallClassroomRes.body.id;
+        console.log(`✓ Small classroom created: ID ${smallClassroomId}`);
+
+        const testDeviceToken = 'test-device-uuid-1234';
+
+        // B. Check 2: Try to claim Room 101 (capacity 50 > 25) -> should be 403
+        console.log('Testing Claim Check 2: Claiming room with capacity > 25 (Room 101)...');
+        const claimResLarge = await request('/api/claims', 'POST', {
+            classroom_id: classroomId,
+            device_token: testDeviceToken,
+            group_size: 5,
+            duration: 60
+        });
+        if (claimResLarge.status === 403) {
+            console.log('✓ Success! Blocked claiming room with capacity > 25. Error:', claimResLarge.body.error);
+        } else {
+            throw new Error(`Expected status 403 when claiming large room, got ${claimResLarge.status}: ${JSON.stringify(claimResLarge.body)}`);
+        }
+
+        // C. Check 3: Try to claim Room 102 with group size 30 > capacity 20 -> should be 400
+        console.log('Testing Claim Check 3: Group size > room capacity...');
+        const claimResOverSize = await request('/api/claims', 'POST', {
+            classroom_id: smallClassroomId,
+            device_token: testDeviceToken,
+            group_size: 30,
+            duration: 60
+        });
+        if (claimResOverSize.status === 400) {
+            console.log('✓ Success! Blocked group size > capacity. Error:', claimResOverSize.body.error);
+        } else {
+            throw new Error(`Expected status 400 for oversize group, got ${claimResOverSize.status}: ${JSON.stringify(claimResOverSize.body)}`);
+        }
+
+        // D. Create a valid claim for small classroom
+        console.log('Testing Valid Claim Creation for small room (Room 102)...');
+        const claimResValid = await request('/api/claims', 'POST', {
+            classroom_id: smallClassroomId,
+            device_token: testDeviceToken,
+            group_size: 10,
+            duration: 60
+        });
+        if (claimResValid.status === 200 && claimResValid.body.cancel_pin) {
+            console.log(`✓ Success! Room claimed successfully. PIN: ${claimResValid.body.cancel_pin}`);
+        } else {
+            throw new Error(`Expected status 200 and PIN, got ${claimResValid.status}: ${JSON.stringify(claimResValid.body)}`);
+        }
+
+        // E. Check 1: Try to claim again with same device_token -> should be 429
+        console.log('Testing Claim Check 1: Active claim exists for device_token...');
+        const claimResDuplicate = await request('/api/claims', 'POST', {
+            classroom_id: smallClassroomId,
+            device_token: testDeviceToken,
+            group_size: 5,
+            duration: 30
+        });
+        if (claimResDuplicate.status === 429) {
+            console.log('✓ Success! Blocked duplicate active claim for device token. Error:', claimResDuplicate.body.error);
+        } else {
+            throw new Error(`Expected status 429 for duplicate active claim, got ${claimResDuplicate.status}: ${JSON.stringify(claimResDuplicate.body)}`);
+        }
+
+        // F. Check 4: Overlap with official timetable entry -> should be 409
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const currentDayName = daysOfWeek[new Date().getDay()];
+        
+        const classStart = new Date(Date.now() - 15 * 60000);
+        const classEnd = new Date(Date.now() + 45 * 60000);
+        const pad = (n) => String(n).padStart(2, '0');
+        const classStartTimeStr = `${pad(classStart.getHours())}:${pad(classStart.getMinutes())}:00`;
+        const classEndTimeStr = `${pad(classEnd.getHours())}:${pad(classEnd.getMinutes())}:00`;
+
+        console.log(`Scheduling overlapping class for Room 102 on ${currentDayName} ${classStartTimeStr} - ${classEndTimeStr}...`);
+        const claimTimetableRes = await request('/api/admin/timetables', 'POST', {
+            classroom_id: smallClassroomId,
+            group_id: groupId,
+            lecturer_id: lecturerId,
+            course_id: courseId,
+            day_of_week: currentDayName,
+            start_time: classStartTimeStr,
+            end_time: classEndTimeStr,
+            unit_id: unitId
+        }, token);
+
+        const claimTimetableId = claimTimetableRes.body.id;
+        console.log(`✓ Overlapping timetable class scheduled: ID ${claimTimetableId}`);
+
+        console.log('Testing Claim Check 4: Overlap with official timetable...');
+        const claimResOverlap = await request('/api/claims', 'POST', {
+            classroom_id: smallClassroomId,
+            device_token: 'another-device-uuid-9999',
+            group_size: 5,
+            duration: 60
+        });
+        if (claimResOverlap.status === 409) {
+            console.log('✓ Success! Blocked claim overlapping timetable. Error:', claimResOverlap.body.error);
+        } else {
+            throw new Error(`Expected status 409 for timetable overlap, got ${claimResOverlap.status}: ${JSON.stringify(claimResOverlap.body)}`);
+        }
+
         // 8. Clean up test records (timetables must be deleted first due to RESTRICT)
         console.log('\nCleaning up database records...');
+        if (claimTimetableId) {
+            await request(`/api/admin/timetables/${claimTimetableId}`, 'DELETE', null, token);
+        }
         await request(`/api/admin/timetables/${timetableId}`, 'DELETE', null, token);
         await request(`/api/admin/units/${unitId}`, 'DELETE', null, token);
         await request(`/api/admin/lecturers/${lecturerId}`, 'DELETE', null, token);
         await request(`/api/admin/student-groups/${groupId}`, 'DELETE', null, token);
         await request(`/api/admin/courses/${courseId}`, 'DELETE', null, token);
         await request(`/api/admin/schools/${schoolId}`, 'DELETE', null, token);
+        if (smallClassroomId) {
+            const db = require('./db');
+            await db.query('DELETE FROM room_claims WHERE classroom_id = ?', [smallClassroomId]);
+            await request(`/api/admin/classrooms/${smallClassroomId}`, 'DELETE', null, token);
+        }
         await request(`/api/admin/classrooms/${classroomId}`, 'DELETE', null, token);
         await request(`/api/admin/buildings/${buildingId}`, 'DELETE', null, token);
         console.log('✓ Cleanup complete.');
