@@ -71,8 +71,24 @@ async function createClaim(req, res) {
             return res.status(409).json({ error: 'The requested period overlaps with an official timetable entry' });
         }
 
+        // Generating 4 digit PIN
+        const cancelPin = Math.floor(1000 + Math.random() * 9000).toString();
 
+        // All checks have passed, now insert
+        await db.query(
+            `INSERT INTO room_claims (classroom_id, device_token, group_size, start_time, end_time, cancel_pin) VALUES (?, ?, ?, ?, ?, ?)`,
+            [classroom_id, device_token, group_size, startTimeStr, endTimeStr, cancelPin]
+        );
 
+        return res.json({
+            message: 'Room claimed successfully.',
+            cancel_pin: cancelPin
+        });
 
+    } catch (err) {
+        console.error('Error creating claim:', err);
+        return res.status(500).json({ error: 'Internal server error processing the claim' });
     }
 }
+
+module.exports = { createClaim };
