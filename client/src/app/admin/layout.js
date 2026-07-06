@@ -49,7 +49,7 @@ export default function AdminLayout({ children }) {
         { name: 'Campus Infrastructure', href: '/admin/campus', icon: Building2 },
         { name: 'Academics Records', href: '/admin/academics', icon: GraduationCap },
         { name: 'Timetable Scheduling', href: '/admin/timetable', icon: CalendarClock },
-        { name: 'Utilization Analytics', href: '/admin/analytics', icon: LineChart },
+        // { name: 'Utilization Analytics', href: '/admin/analytics', icon: LineChart },
         { name: 'Claimed Classrooms', href: '/admin/claimed-rooms', icon: CalendarCheck },
         { name: 'System Settings', href: '/admin/settings', icon: Settings },
     ];
@@ -87,8 +87,8 @@ export default function AdminLayout({ children }) {
                                     key={item.name}
                                     href={item.href}
                                     className={`group flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all-custom ${isActive
-                                            ? 'bg-blue-600 text-white shadow'
-                                            : 'text-blue-100 hover:bg-blue-800 hover:text-white'
+                                        ? 'bg-blue-600 text-white shadow'
+                                        : 'text-blue-100 hover:bg-blue-800 hover:text-white'
                                         }`}
                                 >
                                     <Icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-blue-300 group-hover:text-white'}`} />
