@@ -83,6 +83,7 @@ CREATE TABLE room_claims (
     claim_id INT AUTO_INCREMENT PRIMARY KEY,
     classroom_id INT NOT NULL,
     device_token VARCHAR(255) NOT NULL,
+    ip_address VARCHAR(45) NULL,
     group_size INT NOT NULL,
     start_time DATETIME NOT NULL,
     end_time DATETIME NOT NULL,

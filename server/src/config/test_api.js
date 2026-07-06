@@ -1,6 +1,6 @@
 const http = require('http');
 
-const API_PORT = 5000;
+const API_PORT = process.env.API_PORT || 5000;
 const BASE_OPTIONS = {
     hostname: 'localhost',
     port: API_PORT,
@@ -53,6 +53,7 @@ function request(path, method, body = null, token = null) {
 
 async function runTests() {
     console.log('--- STARTING PROGRAMMATIC API TESTS ---');
+    console.log(`Targeting API Port: ${API_PORT}`);
     let token = null;
 
     try {
@@ -208,6 +209,15 @@ async function runTests() {
         console.log(`✓ Small classroom created: ID ${smallClassroomId}`);
 
         const testDeviceToken = 'test-device-uuid-1234';
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        let currentDayName = daysOfWeek[new Date().getDay()];
+        if (currentDayName === 'Sunday') {
+            currentDayName = 'Monday';
+        }
+        
+        // Define times for search and claim verification (within 08:15 to 17:15)
+        const claimStartTimeVal = '10:15';
+        const claimEndTimeVal = '11:00';
 
         // B. Check 2: Try to claim Room 101 (capacity 50 > 25) -> should be 403
         console.log('Testing Claim Check 2: Claiming room with capacity > 25 (Room 101)...');
@@ -215,7 +225,9 @@ async function runTests() {
             classroom_id: classroomId,
             device_token: testDeviceToken,
             group_size: 5,
-            duration: 60
+            day_of_week: currentDayName,
+            start_time: claimStartTimeVal,
+            end_time: claimEndTimeVal
         });
         if (claimResLarge.status === 403) {
             console.log('✓ Success! Blocked claiming room with capacity > 25. Error:', claimResLarge.body.error);
@@ -229,7 +241,9 @@ async function runTests() {
             classroom_id: smallClassroomId,
             device_token: testDeviceToken,
             group_size: 30,
-            duration: 60
+            day_of_week: currentDayName,
+            start_time: claimStartTimeVal,
+            end_time: claimEndTimeVal
         });
         if (claimResOverSize.status === 400) {
             console.log('✓ Success! Blocked group size > capacity. Error:', claimResOverSize.body.error);
@@ -243,7 +257,9 @@ async function runTests() {
             classroom_id: smallClassroomId,
             device_token: testDeviceToken,
             group_size: 10,
-            duration: 60
+            day_of_week: currentDayName,
+            start_time: claimStartTimeVal,
+            end_time: claimEndTimeVal
         });
         if (claimResValid.status === 200 && claimResValid.body.cancel_pin) {
             console.log(`✓ Success! Room claimed successfully. PIN: ${claimResValid.body.cancel_pin}`);
@@ -257,7 +273,9 @@ async function runTests() {
             classroom_id: smallClassroomId,
             device_token: testDeviceToken,
             group_size: 5,
-            duration: 30
+            day_of_week: currentDayName,
+            start_time: claimStartTimeVal,
+            end_time: claimEndTimeVal
         });
         if (claimResDuplicate.status === 429) {
             console.log('✓ Success! Blocked duplicate active claim for device token. Error:', claimResDuplicate.body.error);
@@ -265,17 +283,25 @@ async function runTests() {
             throw new Error(`Expected status 429 for duplicate active claim, got ${claimResDuplicate.status}: ${JSON.stringify(claimResDuplicate.body)}`);
         }
 
-        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        let currentDayName = daysOfWeek[new Date().getDay()];
-        if (currentDayName === 'Sunday') {
-            currentDayName = 'Monday';
+        // Test overlap check: another device tries to claim same room at same time -> should be 409
+        console.log('Testing Claim Overlap Check: Claiming already claimed room...');
+        const claimResOverlapRoom = await request('/api/claims', 'POST', {
+            classroom_id: smallClassroomId,
+            device_token: 'another-device-token-9999',
+            group_size: 5,
+            day_of_week: currentDayName,
+            start_time: claimStartTimeVal,
+            end_time: claimEndTimeVal
+        });
+        if (claimResOverlapRoom.status === 409) {
+            console.log('✓ Success! Blocked claim overlap on same classroom. Error:', claimResOverlapRoom.body.error);
+        } else {
+            throw new Error(`Expected status 409 for duplicate classroom booking, got ${claimResOverlapRoom.status}`);
         }
-        
-        const classStart = new Date(Date.now() - 15 * 60000);
-        const classEnd = new Date(Date.now() + 45 * 60000);
-        const pad = (n) => String(n).padStart(2, '0');
-        const classStartTimeStr = `${pad(classStart.getHours())}:${pad(classStart.getMinutes())}:00`;
-        const classEndTimeStr = `${pad(classEnd.getHours())}:${pad(classEnd.getMinutes())}:00`;
+
+        // Define timetable class hours within business hours
+        const classStartTimeStr = '14:00:00';
+        const classEndTimeStr = '16:00:00';
 
         console.log(`Scheduling overlapping class for Room 102 on ${currentDayName} ${classStartTimeStr} - ${classEndTimeStr}...`);
         const claimTimetableRes = await request('/api/admin/timetables', 'POST', {
@@ -297,7 +323,9 @@ async function runTests() {
             classroom_id: smallClassroomId,
             device_token: 'another-device-uuid-9999',
             group_size: 5,
-            duration: 60
+            day_of_week: currentDayName,
+            start_time: '14:30',
+            end_time: '15:30'
         });
         if (claimResOverlap.status === 409) {
             console.log('✓ Success! Blocked claim overlapping timetable. Error:', claimResOverlap.body.error);
@@ -314,10 +342,8 @@ async function runTests() {
 
         // F. Test active claim availability filter & cancel logic
         const currentDayOfWeekName = daysOfWeek[new Date().getDay()] === 'Sunday' ? 'Monday' : daysOfWeek[new Date().getDay()];
-        const nowTime = new Date();
-        const formatTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
-        const claimSearchStart = formatTime(new Date(Date.now() + 5 * 60000)); // 5 mins in future
-        const claimSearchEnd = formatTime(new Date(Date.now() + 40 * 60000)); // 40 mins in future
+        const claimSearchStart = `${claimStartTimeVal}:00`;
+        const claimSearchEnd = `${claimEndTimeVal}:00`;
         
         console.log(`\nTesting Claim Availability Exclude check (searching during active claim period)...`);
         const activeClaimSearchRes = await request(`/api/public/search/available?day_of_week=${currentDayOfWeekName}&start_time=${claimSearchStart}&end_time=${claimSearchEnd}`, 'GET');

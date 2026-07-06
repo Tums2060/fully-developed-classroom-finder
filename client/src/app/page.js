@@ -42,7 +42,9 @@ export default function SearchPage() {
     const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
     const [selectedRoomForClaim, setSelectedRoomForClaim] = useState(null);
     const [groupSize, setGroupSize] = useState(1);
-    const [duration, setDuration] = useState(30);
+    const [claimDay, setClaimDay] = useState('Monday');
+    const [claimStartTime, setClaimStartTime] = useState('08:00');
+    const [claimEndTime, setClaimEndTime] = useState('10:00');
     const [claimSuccess, setClaimSuccess] = useState(false);
     const [cancellationPin, setCancellationPin] = useState('');
     const [claimError, setClaimError] = useState('');
@@ -88,12 +90,64 @@ export default function SearchPage() {
 
     // Initialize defaults and run initial search on mount
     useEffect(() => {
-        const weekdays = ['Monday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const currentDayIndex = new Date().getDay();
-        const defaultDay = weekdays[currentDayIndex];
+        const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const now = new Date();
+        let defaultDayIndex = now.getDay();
+        let defaultDay = weekdays[defaultDayIndex];
+        
+        let hours = now.getHours();
+        let minutes = now.getMinutes();
+        
+        let startStr = '08:15';
+        let endStr = '09:15';
+        
+        const pad = (n) => String(n).padStart(2, '0');
+        const currentTimeStr = `${pad(hours)}:${pad(minutes)}`;
+        
+        if (defaultDay === 'Sunday') {
+            defaultDay = 'Monday';
+            startStr = '08:15';
+            endStr = '09:15';
+        } else if (currentTimeStr >= '17:15') {
+            defaultDayIndex = (defaultDayIndex + 1) % 7;
+            if (weekdays[defaultDayIndex] === 'Sunday') {
+                defaultDayIndex = 1; 
+            }
+            defaultDay = weekdays[defaultDayIndex];
+            startStr = '08:15';
+            endStr = '09:15';
+        } else if (currentTimeStr < '08:15') {
+            startStr = '08:15';
+            endStr = '09:15';
+        } else {
+            let defaultMins = minutes >= 30 ? 30 : 0;
+            if (hours === 8 && defaultMins === 0) {
+                hours = 8;
+                defaultMins = 15;
+            }
+            startStr = `${pad(hours)}:${pad(defaultMins)}`;
+            
+            let endHours = hours + 1;
+            let endMins = defaultMins;
+            if (endHours > 17 || (endHours === 17 && endMins > 15)) {
+                endHours = 17;
+                endMins = 15;
+            }
+            endStr = `${pad(endHours)}:${pad(endMins)}`;
+        }
+
         setDayOfWeek(defaultDay);
+        setStartTime(startStr);
+        setEndTime(endStr);
 
         const fetchRoomTypesAndInitialRooms = async () => {
+            // Retrieve or generate device token 
+            let deviceToken = localStorage.getItem('device_token');
+            if (!deviceToken) {
+                deviceToken = uuidv4();
+                localStorage.setItem('device_token', deviceToken);
+            }
+
             try {
                 const res = await fetch('http://localhost:5000/api/public/room-types');
                 if (res.ok) {
@@ -105,7 +159,7 @@ export default function SearchPage() {
             }
 
             // Run initial search automatically
-            await fetchAvailableRooms(defaultDay, startTime, endTime, capacity, roomType);
+            await fetchAvailableRooms(defaultDay, startStr, endStr, capacity, roomType);
         };
 
         fetchRoomTypesAndInitialRooms();
@@ -151,8 +205,9 @@ export default function SearchPage() {
     const handleOpenClaimModal = (room) => {
         setSelectedRoomForClaim(room);
         setGroupSize(1);
-        const availableOptions = getFilteredDurations(room);
-        setDuration(availableOptions.length > 0 ? availableOptions[0].value : 30);
+        setClaimDay(dayOfWeek);
+        setClaimStartTime(startTime);
+        setClaimEndTime(endTime);
         setClaimSuccess(false);
         setCancellationPin('');
         setClaimError('');
@@ -204,7 +259,9 @@ export default function SearchPage() {
                     classroom_id: selectedRoomForClaim.id,
                     device_token: deviceToken,
                     group_size: groupSize,
-                    duration: duration
+                    day_of_week: claimDay,
+                    start_time: claimStartTime,
+                    end_time: claimEndTime
                 }),
             });
 
@@ -282,6 +339,12 @@ export default function SearchPage() {
                             </Link>
                         </div>
                         <div className="flex items-center gap-3">
+                            <Link
+                                href="/claimed-rooms"
+                                className="bg-blue-800 hover:bg-blue-700 text-white border border-blue-700 px-4 py-2 rounded-md text-sm font-medium transition-all-custom cursor-pointer"
+                            >
+                                Claimed Rooms
+                            </Link>
                             <button
                                 onClick={() => setIsCancelModalOpen(true)}
                                 className="bg-blue-800 hover:bg-blue-700 text-white border border-blue-700 px-4 py-2 rounded-md text-sm font-medium transition-all-custom cursor-pointer"
@@ -638,28 +701,52 @@ export default function SearchPage() {
                                         </select>
                                     </div>
 
-                                    {/* Duration selection */}
+                                    {/* Day of the week select */}
                                     <div>
-                                        <label htmlFor="modal_duration" className="block text-xs font-semibold text-slate-700 mb-1.5">
-                                            Claim Duration
+                                        <label htmlFor="modal_day" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                            Booking Day
                                         </label>
-                                        {getFilteredDurations(selectedRoomForClaim).length > 0 ? (
-                                            <select
-                                                id="modal_duration"
-                                                value={duration}
-                                                onChange={(e) => setDuration(parseInt(e.target.value, 10))}
-                                                className="block w-full rounded-md border-slate-350 border p-2.5 bg-white text-slate-905 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        <select
+                                            id="modal_day"
+                                            value={claimDay}
+                                            onChange={(e) => setClaimDay(e.target.value)}
+                                            className="block w-full rounded-md border-slate-350 border p-2.5 bg-white text-slate-900 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            required
+                                        >
+                                            {days.map((d) => (
+                                                <option key={d} value={d}>{d}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Start & End time inputs */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label htmlFor="modal_start_time" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                                Start Time
+                                            </label>
+                                            <input
+                                                type="time"
+                                                id="modal_start_time"
+                                                value={claimStartTime}
+                                                onChange={(e) => setClaimStartTime(e.target.value)}
+                                                className="block w-full rounded-md border-slate-350 border p-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-900 bg-white"
                                                 required
-                                            >
-                                                {getFilteredDurations(selectedRoomForClaim).map((opt) => (
-                                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            <div className="text-xs text-rose-600 bg-rose-50 border border-rose-100 rounded-md p-3 font-semibold">
-                                                This room cannot be claimed because the next official class starts in less than 30 minutes.
-                                            </div>
-                                        )}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="modal_end_time" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                                End Time
+                                            </label>
+                                            <input
+                                                type="time"
+                                                id="modal_end_time"
+                                                value={claimEndTime}
+                                                onChange={(e) => setClaimEndTime(e.target.value)}
+                                                className="block w-full rounded-md border-slate-350 border p-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-900 bg-white"
+                                                required
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Action Buttons */}
@@ -673,7 +760,7 @@ export default function SearchPage() {
                                         </button>
                                         <button
                                             type="submit"
-                                            disabled={isSubmittingClaim || getFilteredDurations(selectedRoomForClaim).length === 0}
+                                            disabled={isSubmittingClaim}
                                             className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-2.5 rounded-md transition-colors cursor-pointer text-sm shadow flex justify-center items-center gap-2"
                                         >
                                             {isSubmittingClaim ? (

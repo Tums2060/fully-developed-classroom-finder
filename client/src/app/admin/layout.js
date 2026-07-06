@@ -14,7 +14,8 @@ import {
     Settings,
     LogOut,
     UserCheck,
-    Loader
+    Loader,
+    CalendarCheck
 } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
@@ -49,6 +50,7 @@ export default function AdminLayout({ children }) {
         { name: 'Academics Records', href: '/admin/academics', icon: GraduationCap },
         { name: 'Timetable Scheduling', href: '/admin/timetable', icon: CalendarClock },
         { name: 'Utilization Analytics', href: '/admin/analytics', icon: LineChart },
+        { name: 'Claimed Classrooms', href: '/admin/claimed-rooms', icon: CalendarCheck },
         { name: 'System Settings', href: '/admin/settings', icon: Settings },
     ];
 

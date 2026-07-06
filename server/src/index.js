@@ -30,6 +30,27 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: err.message || 'Something went wrong on the server' });
 });
 
+const db = require('./config/db');
+
+// Ensure ip_address column exists in room_claims table
+db.query(`
+    SELECT COLUMN_NAME 
+    FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'room_claims' AND COLUMN_NAME = 'ip_address'
+`, [process.env.DB_NAME || 'classroom_finder2'])
+.then(([rows]) => {
+    if (rows.length === 0) {
+        console.log("Adding ip_address column to room_claims...");
+        return db.query('ALTER TABLE room_claims ADD COLUMN ip_address VARCHAR(45) NULL');
+    }
+})
+.then(() => {
+    console.log("Database schema check: ip_address column verified.");
+})
+.catch(err => {
+    console.error("Failed to verify/alter room_claims table schema:", err);
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

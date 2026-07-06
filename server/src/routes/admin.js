@@ -10,6 +10,7 @@ const academicsController = require('../controllers/academicsController');
 const timetableController = require('../controllers/timetableController');
 const analyticsController = require('../controllers/analyticsController');
 const settingsController = require('../controllers/settingsController');
+const claimsController = require('../controllers/claimsController');
 
 // All routes in this router require authentication
 router.use(authenticateToken);
@@ -58,6 +59,10 @@ router.post('/timetables', timetableController.createTimetable);
 router.put('/timetables/:id', timetableController.updateTimetable);
 router.delete('/timetables/:id', timetableController.deleteTimetable);
 router.post('/timetables/check-conflicts', timetableController.verifyConflicts);
+
+// --- CLAIMS MANAGEMENT ---
+router.get('/claims', claimsController.listAllClaims);
+router.delete('/claims/:id', claimsController.deleteClaimAdmin);
 
 // --- ANALYTICS DASHBOARD ---
 router.get('/analytics/stats', analyticsController.getStats);

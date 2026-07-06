@@ -1,20 +1,34 @@
 const db = require('../config/db');
 
 // Helper to convert day of week and time to datetime for conflict checking in the current week 
-function getDatetimeForDayAndTime(dayOfWeek, timeStr) {
+function getDatetimeForDayAndTime(dayOfWeek, timeStr, baseDateStr = null) {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const targetDayIndex = days.findIndex(d => d.toLowerCase() === dayOfWeek.toLowerCase());
     if (targetDayIndex === -1) return null;
 
     const now = new Date();
-    const currentDayIndex = now.getDay();
-    const diff = targetDayIndex - currentDayIndex;
-
-    const targetDate = new Date(now);
-    targetDate.setDate(now.getDate() + diff);
-
     const [hours, minutes] = timeStr.split(':');
+
+    let targetDate;
+    if (baseDateStr) {
+        // Use the same date (year, month, day) as the baseDateStr
+        const [datePart] = baseDateStr.split(' ');
+        const [year, month, date] = datePart.split('-').map(Number);
+        targetDate = new Date(year, month - 1, date);
+    } else {
+        const currentDayIndex = now.getDay();
+        const diff = targetDayIndex - currentDayIndex;
+
+        targetDate = new Date(now);
+        targetDate.setDate(now.getDate() + diff);
+    }
+
     targetDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+
+    // Only roll over if we are calculating the start time (no baseDateStr)
+    if (!baseDateStr && targetDate < now) {
+        targetDate.setDate(targetDate.getDate() + 7);
+    }
 
     const year = targetDate.getFullYear();
     const month = String(targetDate.getMonth() + 1).padStart(2, '0');
@@ -35,13 +49,19 @@ async function searchAvailable(req, res) {
         return res.status(400).json({ error: 'Searches on Sunday are not supported' });
     }
 
+    const minTime = '08:15';
+    const maxTime = '17:15';
+    if (start_time < minTime || start_time > maxTime || end_time < minTime || end_time > maxTime) {
+        return res.status(400).json({ error: 'Classrooms can only be searched and claimed between 08:15 and 17:15.' });
+    }
+
     // Time validation (start_time < end_time)
     if (start_time >= end_time) {
         return res.status(400).json({ error: 'Start time must be strictly before end time' });
     }
     try {
         const searchStartDT = getDatetimeForDayAndTime(day_of_week, start_time);
-        const searchEndDT = getDatetimeForDayAndTime(day_of_week, end_time);
+        const searchEndDT = getDatetimeForDayAndTime(day_of_week, end_time, searchStartDT);
 
         let sql = `
             SELECT c.id, c.name AS room_name, c.capacity, c.room_type, b.name AS building_name,
@@ -92,7 +112,7 @@ async function searchAvailable(req, res) {
         // Convert next_class_start (which is a TIME string or null) into a full DATETIME string
         const processedRows = rows.map(row => {
             if (row.next_class_start) {
-                row.next_class_start = getDatetimeForDayAndTime(day_of_week, row.next_class_start);
+                row.next_class_start = getDatetimeForDayAndTime(day_of_week, row.next_class_start, searchStartDT);
             }
             return row;
         });
