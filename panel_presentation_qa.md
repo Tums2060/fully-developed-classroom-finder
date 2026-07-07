@@ -79,3 +79,31 @@ We built a custom seeding utility (`seed.js`):
 2. **NFC / Smart Lock Integration**: Connect the 4-digit cancellation PIN to smart lock keypads outside classrooms. The room door would only unlock if the PIN is entered during the claimed slot.
 3. **IoT Occupancy Sensors**: Install cheap motion sensors (PIR) in classrooms. If a student claims a room but does not show up within 15 minutes, the sensor detects no movement, and the server automatically releases the claim.
 4. **Admin Analytics Dashboard**: Provide graphs tracking peak booking hours, buildings with highest demand, and common booking durations to help university administration optimize class scheduling.
+
+---
+
+## Theme 6: Priority Overrides & Date Rollover Logic
+
+### Q9: What happens if a student claims a classroom, and then the administrator schedules an official class at that same place and time? Who has priority?
+**Answer:**
+Official university classes **always take priority**. We have implemented an automated conflict resolution rule inside the backend:
+- When an administrator inserts or updates a timetable entry in the `timetables` table (handled in [timetableController.js](file:///home/tumaini/Documents/ExternalProjects/CS-Project/fully-developed-classroom-finder/server/src/controllers/timetableController.js#L193) and [timetableController.js](file:///home/tumaini/Documents/ExternalProjects/CS-Project/fully-developed-classroom-finder/server/src/controllers/timetableController.js#L264)), the server executes an auto-revoke query:
+  ```sql
+  DELETE FROM room_claims 
+  WHERE classroom_id = ? 
+    AND DAYNAME(start_time) = ? 
+    AND TIME(start_time) < ? 
+    AND TIME(end_time) > ?
+  ```
+- This automatically deletes any student bookings for that classroom that overlap with the newly scheduled official class. When the student refreshes their dashboard or checks "My Claimed Rooms", their conflicting claim will have been cleanly removed, and the room will show up as timetabled.
+
+### Q10: How does the server know the calendar date for booking a room? Where is the code that does this, and how does it work?
+**Answer:**
+The server computes dates dynamically using the `getDatetimeForDayAndTime(dayOfWeek, timeStr, baseDateStr)` helper function located in both [claimsController.js](file:///home/tumaini/Documents/ExternalProjects/CS-Project/fully-developed-classroom-finder/server/src/controllers/claimsController.js#L4) and [searchController.js](file:///home/tumaini/Documents/ExternalProjects/CS-Project/fully-developed-classroom-finder/server/src/controllers/searchController.js#L4).
+
+Here is how the code logic works step-by-step:
+1. **Calculate the day difference (`diff`)**: It compares the index of the requested weekday (e.g., Monday = 1) with the current system day index (e.g., Wednesday = 3) using `now.getDay()`.
+2. **Apply difference to today's date**: It sets the calendar day using `targetDate.setDate(now.getDate() + diff)`. This aligns the target day with the current calendar week.
+3. **Apply time**: It parses the `timeStr` (e.g. `'08:15'`) and applies the hours and minutes to `targetDate`.
+4. **Enforce Week Rollover**: If the calculated `targetDate` has already passed today (i.e. `targetDate < now`), it adds **7 days** (`targetDate.setDate(targetDate.getDate() + 7)`) to automatically schedule it for next week instead of letting it expire instantly.
+5. **Ensure Start and End Date alignment**: When calculating the end time, it passes the formatted start time as a third parameter (`baseDateStr`). If `baseDateStr` is present, it directly copies its calendar year, month, and day, bypassing the rollover logic. This prevents start and end times from splitting across different days.

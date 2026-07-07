@@ -242,6 +242,16 @@ async function createTimetable(req, res) {
             [admin_id, classroom_id, group_id, lecturer_id, course_id, unit_id, day_of_week, start_time, end_time]
         );
 
+        // Auto-revoke conflicting student room claims
+        await db.query(
+            `DELETE FROM room_claims 
+             WHERE classroom_id = ? 
+               AND DAYNAME(start_time) = ? 
+               AND TIME(start_time) < ? 
+               AND TIME(end_time) > ?`,
+            [classroom_id, day_of_week, end_time, start_time]
+        );
+
         return res.json({
             id: result.insertId,
             admin_id,
@@ -322,6 +332,16 @@ async function updateTimetable(req, res) {
              SET admin_id = ?, classroom_id = ?, group_id = ?, lecturer_id = ?, course_id = ?, unit_id = ?, day_of_week = ?, start_time = ?, end_time = ?
              WHERE id = ?`,
             [admin_id, classroom_id, group_id, lecturer_id, course_id, unit_id, day_of_week, start_time, end_time, id]
+        );
+
+        // Auto-revoke conflicting student room claims
+        await db.query(
+            `DELETE FROM room_claims 
+             WHERE classroom_id = ? 
+               AND DAYNAME(start_time) = ? 
+               AND TIME(start_time) < ? 
+               AND TIME(end_time) > ?`,
+            [classroom_id, day_of_week, end_time, start_time]
         );
 
         return res.json({

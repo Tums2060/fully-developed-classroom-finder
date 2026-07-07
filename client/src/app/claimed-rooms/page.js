@@ -14,6 +14,8 @@ import {
     Network
 } from 'lucide-react';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function StudentClaimedRoomsPage() {
     const [claims, setClaims] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ export default function StudentClaimedRoomsPage() {
         setError('');
         try {
             const deviceToken = localStorage.getItem('device_token') || '';
-            const res = await fetch(`http://localhost:5000/api/claims/my-claims?device_token=${deviceToken}`);
+            const res = await fetch(`${API_URL}/api/claims/my-claims?device_token=${deviceToken}`);
             if (!res.ok) {
                 throw new Error('Failed to load your claimed rooms.');
             }
@@ -47,7 +49,7 @@ export default function StudentClaimedRoomsPage() {
         if (!confirm('Are you sure you want to release this classroom claim?')) return;
         setActionLoading(claimId);
         try {
-            const response = await fetch('http://localhost:5000/api/claims/cancel', {
+            const response = await fetch(`${API_URL}/api/claims/cancel`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

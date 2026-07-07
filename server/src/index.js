@@ -7,7 +7,10 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: (origin, callback) => {
+        // Dynamically allow any origin (e.g. your phone's IP address) in development
+        callback(null, true);
+    },
     credentials: true
 }));
 app.use(express.json());

@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function SearchPage() {
     // Search Parameter states
     const [dayOfWeek, setDayOfWeek] = useState('Monday');
@@ -71,7 +73,7 @@ export default function SearchPage() {
             if (capVal) params.append('capacity', capVal);
             if (typeVal && typeVal !== 'All') params.append('room_type', typeVal);
 
-            const res = await fetch(`http://localhost:5000/api/public/search/available?${params.toString()}`);
+            const res = await fetch(`${API_URL}/api/public/search/available?${params.toString()}`);
             if (!res.ok) {
                 const data = await res.json();
                 throw new Error(data.error || 'Failed to fetch search results');
@@ -149,7 +151,7 @@ export default function SearchPage() {
             }
 
             try {
-                const res = await fetch('http://localhost:5000/api/public/room-types');
+                const res = await fetch(`${API_URL}/api/public/room-types`);
                 if (res.ok) {
                     const data = await res.json();
                     setRoomTypes(data);
@@ -250,7 +252,7 @@ export default function SearchPage() {
                 localStorage.setItem('device_token', deviceToken);
             }
 
-            const response = await fetch('http://localhost:5000/api/claims', {
+            const response = await fetch(`${API_URL}/api/claims`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -288,7 +290,7 @@ export default function SearchPage() {
         setIsSubmittingCancel(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/claims/cancel', {
+            const response = await fetch(`${API_URL}/api/claims/cancel`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

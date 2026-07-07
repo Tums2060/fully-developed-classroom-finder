@@ -3,86 +3,326 @@
     {
       "name": "Central Building",
       "classrooms": [
-        { "name": "Room 1", "capacity": 40, "room_type": "Standard" },
-        { "name": "Room 2", "capacity": 40, "room_type": "Standard" },
-        { "name": "Room 3", "capacity": 40, "room_type": "Standard" },
-        { "name": "Room 4", "capacity": 40, "room_type": "Standard" },
-        { "name": "Room 5", "capacity": 40, "room_type": "Standard" },
-        { "name": "Room 6", "capacity": 40, "room_type": "Standard" },
-        { "name": "Room 7", "capacity": 40, "room_type": "Standard" },
-        { "name": "Room 8", "capacity": 40, "room_type": "Standard" },
-        { "name": "Room 9", "capacity": 40, "room_type": "Standard" },
-        { "name": "Room 10", "capacity": 40, "room_type": "Standard" },
-        { "name": "Longonot Lab", "capacity": 40, "room_type": "Lab" },
-        { "name": "Masinga Lab", "capacity": 40, "room_type": "Lab" },
-        { "name": "Language Lab", "capacity": 40, "room_type": "Lab" },
-        { "name": "LT1", "capacity": 40, "room_type": "LT" },
-        { "name": "LT2", "capacity": 40, "room_type": "LT" },
-        { "name": "LT3", "capacity": 40, "room_type": "LT" },
-        { "name": "LT4", "capacity": 40, "room_type": "LT" },
-        { "name": "LT5", "capacity": 40, "room_type": "LT" },
-        { "name": "LT6", "capacity": 40, "room_type": "LT" }
+        {
+          "name": "Room 1",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "Room 2",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "Room 3",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "Room 4",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "Room 5",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "Room 6",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "Room 7",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "Room 8",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "Room 9",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "Room 10",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "Longonot Lab",
+          "capacity": 20,
+          "room_type": "Lab"
+        },
+        {
+          "name": "Masinga Lab",
+          "capacity": 40,
+          "room_type": "Lab"
+        },
+        {
+          "name": "Language Lab",
+          "capacity": 20,
+          "room_type": "Lab"
+        },
+        {
+          "name": "LT1",
+          "capacity": 40,
+          "room_type": "LT"
+        },
+        {
+          "name": "LT2",
+          "capacity": 40,
+          "room_type": "LT"
+        },
+        {
+          "name": "LT3",
+          "capacity": 40,
+          "room_type": "LT"
+        },
+        {
+          "name": "LT4",
+          "capacity": 40,
+          "room_type": "LT"
+        },
+        {
+          "name": "LT5",
+          "capacity": 40,
+          "room_type": "LT"
+        },
+        {
+          "name": "LT6",
+          "capacity": 40,
+          "room_type": "LT"
+        }
       ]
     },
     {
       "name": "Student Center (STC)",
       "classrooms": [
-        { "name": "Chuka Lab", "capacity": 40, "room_type": "Lab" }
+        {
+          "name": "Chuka Lab",
+          "capacity": 20,
+          "room_type": "Lab"
+        }
       ]
     },
     {
       "name": "STMB",
       "classrooms": [
-        { "name": "STM-B GF-01", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B GF-02", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B BM-01", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B BM-02", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F2-01", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F2-02", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F2-03", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F2-04", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F2-05", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F3-01", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F3-02", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F3-03", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F3-04", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F3-05", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F4-01", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F4-02", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F4-03", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F4-04", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F4-05", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F5-01", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F5-02", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F5-03", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F5-04", "capacity": 40, "room_type": "Standard" },
-        { "name": "STM-B F5-05", "capacity": 40, "room_type": "Standard" }
+        {
+          "name": "STM-B GF-01",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B GF-02",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B BM-01",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B BM-02",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F2-01",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F2-02",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F2-03",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F2-04",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F2-05",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F3-01",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F3-02",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F3-03",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F3-04",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F3-05",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F4-01",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F4-02",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F4-03",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F4-04",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F4-05",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F5-01",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F5-02",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F5-03",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F5-04",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "STM-B F5-05",
+          "capacity": 40,
+          "room_type": "Standard"
+        }
       ]
     },
     {
       "name": "MSB",
       "classrooms": [
-        { "name": "MSB 1", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 2", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 3", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 4", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 5", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 6", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 7", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 8", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 9", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 10", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 11", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 12", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 13", "capacity": 40, "room_type": "Standard" },
-        { "name": "MSB 14", "capacity": 40, "room_type": "Standard" }
+        {
+          "name": "MSB 1",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 2",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 3",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 4",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 5",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 6",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 7",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 8",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 9",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 10",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 11",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 12",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 13",
+          "capacity": 40,
+          "room_type": "Standard"
+        },
+        {
+          "name": "MSB 14",
+          "capacity": 40,
+          "room_type": "Standard"
+        }
       ]
     },
     {
       "name": "SBS Building",
       "classrooms": [
-        { "name": "SBS 1", "capacity": 40, "room_type": "Standard" },
-        { "name": "SBS 2", "capacity": 40, "room_type": "Standard" }
+        {
+          "name": "SBS 1",
+          "capacity": 30,
+          "room_type": "Standard"
+        },
+        {
+          "name": "SBS 2",
+          "capacity": 30,
+          "room_type": "Standard"
+        }
       ]
     }
   ],
@@ -94,24 +334,48 @@
           "name": "BSc in Tourism Management",
           "short_name": "BTM",
           "student_groups": [
-            { "name": "BTM A" },
-            { "name": "BTM B" },
-            { "name": "BTM C" },
-            { "name": "BTM D" },
-            { "name": "BTM E" },
-            { "name": "BTM F" }
+            {
+              "name": "BTM A"
+            },
+            {
+              "name": "BTM B"
+            },
+            {
+              "name": "BTM C"
+            },
+            {
+              "name": "BTM D"
+            },
+            {
+              "name": "BTM E"
+            },
+            {
+              "name": "BTM F"
+            }
           ]
         },
         {
           "name": "BSc in Hospitality Management",
           "short_name": "BHM",
           "student_groups": [
-            { "name": "BHM A" },
-            { "name": "BHM B" },
-            { "name": "BHM C" },
-            { "name": "BHM D" },
-            { "name": "BHM E" },
-            { "name": "BHM F" }
+            {
+              "name": "BHM A"
+            },
+            {
+              "name": "BHM B"
+            },
+            {
+              "name": "BHM C"
+            },
+            {
+              "name": "BHM D"
+            },
+            {
+              "name": "BHM E"
+            },
+            {
+              "name": "BHM F"
+            }
           ]
         }
       ]
@@ -123,36 +387,72 @@
           "name": "Bachelor of Arts in Communication",
           "short_name": "BAC",
           "student_groups": [
-            { "name": "BAC A" },
-            { "name": "BAC B" },
-            { "name": "BAC C" },
-            { "name": "BAC D" },
-            { "name": "BAC E" },
-            { "name": "BAC F" }
+            {
+              "name": "BAC A"
+            },
+            {
+              "name": "BAC B"
+            },
+            {
+              "name": "BAC C"
+            },
+            {
+              "name": "BAC D"
+            },
+            {
+              "name": "BAC E"
+            },
+            {
+              "name": "BAC F"
+            }
           ]
         },
         {
           "name": "Bachelor of Arts in Development Studies and Philosophy",
           "short_name": "BDP",
           "student_groups": [
-            { "name": "BDP A" },
-            { "name": "BDP B" },
-            { "name": "BDP C" },
-            { "name": "BDP D" },
-            { "name": "BDP E" },
-            { "name": "BDP F" }
+            {
+              "name": "BDP A"
+            },
+            {
+              "name": "BDP B"
+            },
+            {
+              "name": "BDP C"
+            },
+            {
+              "name": "BDP D"
+            },
+            {
+              "name": "BDP E"
+            },
+            {
+              "name": "BDP F"
+            }
           ]
         },
         {
           "name": "Bachelor of Arts in International Studies",
           "short_name": "BIS",
           "student_groups": [
-            { "name": "BIS A" },
-            { "name": "BIS B" },
-            { "name": "BIS C" },
-            { "name": "BIS D" },
-            { "name": "BIS E" },
-            { "name": "BIS F" }
+            {
+              "name": "BIS A"
+            },
+            {
+              "name": "BIS B"
+            },
+            {
+              "name": "BIS C"
+            },
+            {
+              "name": "BIS D"
+            },
+            {
+              "name": "BIS E"
+            },
+            {
+              "name": "BIS F"
+            }
           ]
         }
       ]
@@ -164,48 +464,96 @@
           "name": "Diploma in Business Information Technology",
           "short_name": "DBIT",
           "student_groups": [
-            { "name": "DBIT A" },
-            { "name": "DBIT B" },
-            { "name": "DBIT C" },
-            { "name": "DBIT D" },
-            { "name": "DBIT E" },
-            { "name": "DBIT F" }
+            {
+              "name": "DBIT A"
+            },
+            {
+              "name": "DBIT B"
+            },
+            {
+              "name": "DBIT C"
+            },
+            {
+              "name": "DBIT D"
+            },
+            {
+              "name": "DBIT E"
+            },
+            {
+              "name": "DBIT F"
+            }
           ]
         },
         {
           "name": "Diploma in Business Management",
           "short_name": "DBM",
           "student_groups": [
-            { "name": "DBM A" },
-            { "name": "DBM B" },
-            { "name": "DBM C" },
-            { "name": "DBM D" },
-            { "name": "DBM E" },
-            { "name": "DBM F" }
+            {
+              "name": "DBM A"
+            },
+            {
+              "name": "DBM B"
+            },
+            {
+              "name": "DBM C"
+            },
+            {
+              "name": "DBM D"
+            },
+            {
+              "name": "DBM E"
+            },
+            {
+              "name": "DBM F"
+            }
           ]
         },
         {
           "name": "Diploma in Business Creation and Entrepreneurship",
           "short_name": "DE",
           "student_groups": [
-            { "name": "DE A" },
-            { "name": "DE B" },
-            { "name": "DE C" },
-            { "name": "DE D" },
-            { "name": "DE E" },
-            { "name": "DE F" }
+            {
+              "name": "DE A"
+            },
+            {
+              "name": "DE B"
+            },
+            {
+              "name": "DE C"
+            },
+            {
+              "name": "DE D"
+            },
+            {
+              "name": "DE E"
+            },
+            {
+              "name": "DE F"
+            }
           ]
         },
         {
           "name": "Diploma in International Relations",
           "short_name": "DIR",
           "student_groups": [
-            { "name": "DIR A" },
-            { "name": "DIR B" },
-            { "name": "DIR C" },
-            { "name": "DIR D" },
-            { "name": "DIR E" },
-            { "name": "DIR F" }
+            {
+              "name": "DIR A"
+            },
+            {
+              "name": "DIR B"
+            },
+            {
+              "name": "DIR C"
+            },
+            {
+              "name": "DIR D"
+            },
+            {
+              "name": "DIR E"
+            },
+            {
+              "name": "DIR F"
+            }
           ]
         }
       ]
@@ -217,48 +565,96 @@
           "name": "Bachelor of Science in Computer Networks and Cyber Security",
           "short_name": "CNS",
           "student_groups": [
-            { "name": "CNS A" },
-            { "name": "CNS B" },
-            { "name": "CNS C" },
-            { "name": "CNS D" },
-            { "name": "CNS E" },
-            { "name": "CNS F" }
+            {
+              "name": "CNS A"
+            },
+            {
+              "name": "CNS B"
+            },
+            {
+              "name": "CNS C"
+            },
+            {
+              "name": "CNS D"
+            },
+            {
+              "name": "CNS E"
+            },
+            {
+              "name": "CNS F"
+            }
           ]
         },
         {
           "name": "Bachelor of Science in Electrical and Electronics Engineering",
           "short_name": "BSEEE",
           "student_groups": [
-            { "name": "BSEEE A" },
-            { "name": "BSEEE B" },
-            { "name": "BSEEE C" },
-            { "name": "BSEEE D" },
-            { "name": "BSEEE E" },
-            { "name": "BSEEE F" }
+            {
+              "name": "BSEEE A"
+            },
+            {
+              "name": "BSEEE B"
+            },
+            {
+              "name": "BSEEE C"
+            },
+            {
+              "name": "BSEEE D"
+            },
+            {
+              "name": "BSEEE E"
+            },
+            {
+              "name": "BSEEE F"
+            }
           ]
         },
         {
           "name": "Bachelor of Business Information Technology",
           "short_name": "BBIT",
           "student_groups": [
-            { "name": "BBIT A" },
-            { "name": "BBIT B" },
-            { "name": "BBIT C" },
-            { "name": "BBIT D" },
-            { "name": "BBIT E" },
-            { "name": "BBIT F" }
+            {
+              "name": "BBIT A"
+            },
+            {
+              "name": "BBIT B"
+            },
+            {
+              "name": "BBIT C"
+            },
+            {
+              "name": "BBIT D"
+            },
+            {
+              "name": "BBIT E"
+            },
+            {
+              "name": "BBIT F"
+            }
           ]
         },
         {
           "name": "Bachelor of Science Informatics and Computer Science",
           "short_name": "BICS",
           "student_groups": [
-            { "name": "BICS A" },
-            { "name": "BICS B" },
-            { "name": "BICS C" },
-            { "name": "BICS D" },
-            { "name": "BICS E" },
-            { "name": "BICS F" }
+            {
+              "name": "BICS A"
+            },
+            {
+              "name": "BICS B"
+            },
+            {
+              "name": "BICS C"
+            },
+            {
+              "name": "BICS D"
+            },
+            {
+              "name": "BICS E"
+            },
+            {
+              "name": "BICS F"
+            }
           ]
         }
       ]
@@ -270,60 +666,120 @@
           "name": "Bachelor of Commerce",
           "short_name": "BCOM",
           "student_groups": [
-            { "name": "BCOM A" },
-            { "name": "BCOM B" },
-            { "name": "BCOM C" },
-            { "name": "BCOM D" },
-            { "name": "BCOM E" },
-            { "name": "BCOM F" }
+            {
+              "name": "BCOM A"
+            },
+            {
+              "name": "BCOM B"
+            },
+            {
+              "name": "BCOM C"
+            },
+            {
+              "name": "BCOM D"
+            },
+            {
+              "name": "BCOM E"
+            },
+            {
+              "name": "BCOM F"
+            }
           ]
         },
         {
           "name": "Bachelor of Commerce – CPA/ACCA Exempt",
           "short_name": "BCOM-CPA",
           "student_groups": [
-            { "name": "BCOM-CPA A" },
-            { "name": "BCOM-CPA B" },
-            { "name": "BCOM-CPA C" },
-            { "name": "BCOM-CPA D" },
-            { "name": "BCOM-CPA E" },
-            { "name": "BCOM-CPA F" }
+            {
+              "name": "BCOM-CPA A"
+            },
+            {
+              "name": "BCOM-CPA B"
+            },
+            {
+              "name": "BCOM-CPA C"
+            },
+            {
+              "name": "BCOM-CPA D"
+            },
+            {
+              "name": "BCOM-CPA E"
+            },
+            {
+              "name": "BCOM-CPA F"
+            }
           ]
         },
         {
           "name": "Bachelor of Commerce – Evening",
           "short_name": "BCOM-E",
           "student_groups": [
-            { "name": "BCOM-E A" },
-            { "name": "BCOM-E B" },
-            { "name": "BCOM-E C" },
-            { "name": "BCOM-E D" },
-            { "name": "BCOM-E E" },
-            { "name": "BCOM-E F" }
+            {
+              "name": "BCOM-E A"
+            },
+            {
+              "name": "BCOM-E B"
+            },
+            {
+              "name": "BCOM-E C"
+            },
+            {
+              "name": "BCOM-E D"
+            },
+            {
+              "name": "BCOM-E E"
+            },
+            {
+              "name": "BCOM-E F"
+            }
           ]
         },
         {
           "name": "Bachelor of Financial Services",
           "short_name": "BFS",
           "student_groups": [
-            { "name": "BFS A" },
-            { "name": "BFS B" },
-            { "name": "BFS C" },
-            { "name": "BFS D" },
-            { "name": "BFS E" },
-            { "name": "BFS F" }
+            {
+              "name": "BFS A"
+            },
+            {
+              "name": "BFS B"
+            },
+            {
+              "name": "BFS C"
+            },
+            {
+              "name": "BFS D"
+            },
+            {
+              "name": "BFS E"
+            },
+            {
+              "name": "BFS F"
+            }
           ]
         },
         {
           "name": "Bachelor of Science in Supply Chain and Operations Management",
           "short_name": "SCOM",
           "student_groups": [
-            { "name": "SCOM A" },
-            { "name": "SCOM B" },
-            { "name": "SCOM C" },
-            { "name": "SCOM D" },
-            { "name": "SCOM E" },
-            { "name": "SCOM F" }
+            {
+              "name": "SCOM A"
+            },
+            {
+              "name": "SCOM B"
+            },
+            {
+              "name": "SCOM C"
+            },
+            {
+              "name": "SCOM D"
+            },
+            {
+              "name": "SCOM E"
+            },
+            {
+              "name": "SCOM F"
+            }
           ]
         }
       ]
@@ -335,48 +791,96 @@
           "name": "BBS Actuarial Science",
           "short_name": "ACS",
           "student_groups": [
-            { "name": "ACS A" },
-            { "name": "ACS B" },
-            { "name": "ACS C" },
-            { "name": "ACS D" },
-            { "name": "ACS E" },
-            { "name": "ACS F" }
+            {
+              "name": "ACS A"
+            },
+            {
+              "name": "ACS B"
+            },
+            {
+              "name": "ACS C"
+            },
+            {
+              "name": "ACS D"
+            },
+            {
+              "name": "ACS E"
+            },
+            {
+              "name": "ACS F"
+            }
           ]
         },
         {
           "name": "BBS Financial Economics",
           "short_name": "FE",
           "student_groups": [
-            { "name": "FE A" },
-            { "name": "FE B" },
-            { "name": "FE C" },
-            { "name": "FE D" },
-            { "name": "FE E" },
-            { "name": "FE F" }
+            {
+              "name": "FE A"
+            },
+            {
+              "name": "FE B"
+            },
+            {
+              "name": "FE C"
+            },
+            {
+              "name": "FE D"
+            },
+            {
+              "name": "FE E"
+            },
+            {
+              "name": "FE F"
+            }
           ]
         },
         {
           "name": "BBS Financial Engineering",
           "short_name": "FENG",
           "student_groups": [
-            { "name": "FENG A" },
-            { "name": "FENG B" },
-            { "name": "FENG C" },
-            { "name": "FENG D" },
-            { "name": "FENG E" },
-            { "name": "FENG F" }
+            {
+              "name": "FENG A"
+            },
+            {
+              "name": "FENG B"
+            },
+            {
+              "name": "FENG C"
+            },
+            {
+              "name": "FENG D"
+            },
+            {
+              "name": "FENG E"
+            },
+            {
+              "name": "FENG F"
+            }
           ]
         },
         {
           "name": "BSc Statistics & Data Science",
           "short_name": "SDS",
           "student_groups": [
-            { "name": "SDS A" },
-            { "name": "SDS B" },
-            { "name": "SDS C" },
-            { "name": "SDS D" },
-            { "name": "SDS E" },
-            { "name": "SDS F" }
+            {
+              "name": "SDS A"
+            },
+            {
+              "name": "SDS B"
+            },
+            {
+              "name": "SDS C"
+            },
+            {
+              "name": "SDS D"
+            },
+            {
+              "name": "SDS E"
+            },
+            {
+              "name": "SDS F"
+            }
           ]
         }
       ]
@@ -388,8 +892,12 @@
           "name": "Bachelor of Laws",
           "short_name": "LLB",
           "student_groups": [
-            { "name": "LLB A" },
-            { "name": "LLB B" }
+            {
+              "name": "LLB A"
+            },
+            {
+              "name": "LLB B"
+            }
           ]
         }
       ]
