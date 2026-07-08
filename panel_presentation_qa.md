@@ -65,9 +65,10 @@ Large classrooms (capacity > 25) are resource-heavy spaces like major lecture ha
 **Answer:**
 We built a custom seeding utility (`seed.js`):
 1. **Truncating safely**: The script temporarily disables foreign key checks in MySQL (`SET FOREIGN_KEY_CHECKS = 0`), truncates all existing tables (clearing previous runs), and re-enables them.
-2. **JSON Import**: Reads a structured JSON configuration containing schools, courses, buildings, classrooms, and timetables.
-3. **Structured Inserts**: Programmatically loops and inserts values, ensuring consistent primary-foreign key relationships.
-4. **Admin Setup**: Creates a default Super Administrator user if it does not already exist.
+2. **Academic & Campus Import**: Imports schools, courses, student groups, buildings, and classrooms from `seedData.json`.
+3. **Programmatic Lecturer Generation**: Programmatically seeds 30 lecturers with English first names, Kenyan last names, and formatted Strathmore institutional emails (e.g. `John Wekesa` -> `jwekesa@strathmore.edu`).
+4. **Domain-Specific Unit Generation**: Automatically generates and inserts 64 unique units per course (8 per semester, 16 per year) with names and codes customized to the course's domain (e.g. Computing courses get IT topics, Law gets legal units, etc.).
+5. **Admin Setup**: Creates a default Super Administrator user if it does not already exist.
 
 ---
 

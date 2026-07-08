@@ -22,12 +22,16 @@ export default function AcademicsPage() {
     const [activeSchoolForCourses, setActiveSchoolForCourses] = useState(null);
     const [activeSchoolForGroups, setActiveSchoolForGroups] = useState(null);
     const [activeCourseForGroups, setActiveCourseForGroups] = useState(null);
+    const [activeSchoolForUnits, setActiveSchoolForUnits] = useState(null);
+    const [activeCourseForUnits, setActiveCourseForUnits] = useState(null);
 
     // Reset drill-down states when tab changes
     useEffect(() => {
         setActiveSchoolForCourses(null);
         setActiveSchoolForGroups(null);
         setActiveCourseForGroups(null);
+        setActiveSchoolForUnits(null);
+        setActiveCourseForUnits(null);
     }, [activeTab]);
     
     // Feedback Alerts
@@ -800,11 +804,11 @@ export default function AcademicsPage() {
 
                     {/* --- UNITS TAB --- */}
                     {activeTab === 'units' && (
-                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <div className="space-y-6">
+                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden p-6 flex items-center justify-between">
                                 <div>
-                                    <h3 className="font-bold text-slate-800">Course Units</h3>
-                                    <p className="text-slate-500 text-xs mt-0.5">Academic course units categorized by year and semester.</p>
+                                    <h3 className="font-bold text-slate-800 text-lg">Course Units</h3>
+                                    <p className="text-slate-500 text-xs mt-0.5">Academic course units categorized by year and semester. Select a school to manage its units.</p>
                                 </div>
                                 <button
                                     onClick={() => {
@@ -817,56 +821,189 @@ export default function AcademicsPage() {
                                     <Plus className="h-4 w-4" /> Add Unit
                                 </button>
                             </div>
-                            {units.length === 0 ? (
-                                <div className="text-center py-12 text-slate-400 text-sm">No units registered.</div>
+
+                            {schools.length === 0 ? (
+                                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center text-slate-400 text-sm">
+                                    No schools found. Please add a school first.
+                                </div>
                             ) : (
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-xs uppercase">
-                                            <th className="py-3.5 px-6">Unit Code</th>
-                                            <th className="py-3.5 px-6">Unit Name</th>
-                                            <th className="py-3.5 px-6">Course</th>
-                                            <th className="py-3.5 px-6">Year</th>
-                                            <th className="py-3.5 px-6">Semester</th>
-                                            <th className="py-3.5 px-6 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100 text-sm">
-                                        {units.map(u => (
-                                            <tr key={u.id} className="hover:bg-slate-50/50">
-                                                <td className="py-4 px-6 font-bold text-blue-700">{u.code}</td>
-                                                <td className="py-4 px-6 font-semibold text-slate-800">{u.name}</td>
-                                                <td className="py-4 px-6 text-slate-600 font-semibold">{u.course_name}</td>
-                                                <td className="py-4 px-6 text-slate-600">Year {u.year}</td>
-                                                <td className="py-4 px-6 text-slate-600">Semester {u.semester}</td>
-                                                <td className="py-4 px-6 text-right space-x-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {schools.map(s => {
+                                        const schoolCourses = courses.filter(c => c.school_id === s.id);
+                                        const schoolUnits = units.filter(u => schoolCourses.some(c => c.id === u.course_id));
+                                        return (
+                                            <div
+                                                key={s.id}
+                                                onClick={() => {
+                                                    setActiveSchoolForUnits(s);
+                                                    setActiveCourseForUnits(null);
+                                                }}
+                                                className="group cursor-pointer bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg hover:border-blue-500 hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between h-40"
+                                            >
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center gap-2 text-blue-600">
+                                                        <Book className="h-5 w-5" />
+                                                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">School</span>
+                                                    </div>
+                                                    <h4 className="font-bold text-slate-800 text-base line-clamp-2 group-hover:text-blue-600 transition-colors">
+                                                        {s.name}
+                                                    </h4>
+                                                </div>
+                                                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                                                    <span className="text-xs font-semibold text-slate-500">
+                                                        {schoolUnits.length} {schoolUnits.length === 1 ? 'Unit' : 'Units'} in {schoolCourses.length} {schoolCourses.length === 1 ? 'Course' : 'Courses'}
+                                                    </span>
+                                                    <span className="text-blue-600 text-xs font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                                        View Units &rarr;
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {/* Drill-down Modal for Course Units */}
+                            {activeSchoolForUnits && (
+                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                                    <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full border border-slate-100 overflow-hidden flex flex-col max-h-[85vh]">
+                                        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                                    <Book className="h-5 w-5 text-blue-600" />
+                                                    {activeCourseForUnits ? `Units for ${activeCourseForUnits.name}` : `Courses in ${activeSchoolForUnits.name}`}
+                                                </h3>
+                                                <p className="text-slate-500 text-xs mt-0.5">
+                                                    {activeCourseForUnits 
+                                                        ? `Filtered to academic units.` 
+                                                        : `Select a course to view and edit its units.`}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    setActiveSchoolForUnits(null);
+                                                    setActiveCourseForUnits(null);
+                                                }}
+                                                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition"
+                                            >
+                                                <X className="h-5 w-5" />
+                                            </button>
+                                        </div>
+
+                                        <div className="p-6 overflow-y-auto flex-grow bg-slate-50/50">
+                                            {/* Course Selection Level */}
+                                            {!activeCourseForUnits ? (
+                                                <div className="space-y-3">
+                                                    {courses.filter(c => c.school_id === activeSchoolForUnits.id).length === 0 ? (
+                                                        <div className="text-center py-12 text-slate-400 text-sm">
+                                                            No courses registered in this school.
+                                                        </div>
+                                                    ) : (
+                                                        courses.filter(c => c.school_id === activeSchoolForUnits.id).map(c => {
+                                                            const courseUnitsCount = units.filter(u => u.course_id === c.id).length;
+                                                            return (
+                                                                <button
+                                                                    key={c.id}
+                                                                    onClick={() => setActiveCourseForUnits(c)}
+                                                                    className="w-full text-left p-4 rounded-xl border border-slate-200 bg-white hover:bg-blue-50/40 hover:border-blue-300 transition-all flex items-center justify-between group/btn"
+                                                                >
+                                                                    <div>
+                                                                        <span className="font-bold text-slate-800 block group-hover/btn:text-blue-700 transition-colors">
+                                                                            {c.name}
+                                                                        </span>
+                                                                        <span className="text-xs text-slate-500 font-semibold mt-0.5">
+                                                                            {courseUnitsCount} {courseUnitsCount === 1 ? 'Unit' : 'Units'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <ChevronRight className="h-5 w-5 text-slate-400 group-hover/btn:text-blue-600 group-hover/btn:translate-x-1 transition-all" />
+                                                                </button>
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                /* Units Listing Level */
+                                                <div className="space-y-4">
                                                     <button
-                                                        onClick={() => {
-                                                            setUnitForm({
-                                                                id: u.id,
-                                                                course_id: u.course_id,
-                                                                code: u.code,
-                                                                name: u.name,
-                                                                year: u.year.toString(),
-                                                                semester: u.semester.toString()
-                                                            });
-                                                            setShowUnitModal(true);
-                                                        }}
-                                                        className="bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 p-2 rounded-lg text-xs font-semibold"
+                                                        onClick={() => setActiveCourseForUnits(null)}
+                                                        className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 transition"
                                                     >
-                                                        <Edit2 className="h-3.5 w-3.5" />
+                                                        &larr; Back to Courses
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleDeleteUnit(u.id)}
-                                                        className="bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 p-2 rounded-lg text-xs font-semibold"
-                                                    >
-                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+
+                                                    {units.filter(u => u.course_id === activeCourseForUnits.id).length === 0 ? (
+                                                        <div className="text-center py-12 text-slate-400 text-sm border border-dashed border-slate-200 rounded-xl bg-slate-50">
+                                                            No units registered under this course yet.
+                                                        </div>
+                                                    ) : (
+                                                        <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                                                            <table className="w-full text-left border-collapse">
+                                                                <thead>
+                                                                    <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase">
+                                                                        <th className="py-3 px-5">Unit Code</th>
+                                                                        <th className="py-3 px-5">Unit Name</th>
+                                                                        <th className="py-3 px-5">Year</th>
+                                                                        <th className="py-3 px-5">Semester</th>
+                                                                        <th className="py-3 px-5 text-right">Actions</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody className="divide-y divide-slate-200 text-sm bg-white">
+                                                                    {units.filter(u => u.course_id === activeCourseForUnits.id).map(u => (
+                                                                        <tr key={u.id} className="hover:bg-slate-50/80 transition-colors">
+                                                                            <td className="py-3.5 px-5 font-bold text-blue-700">{u.code}</td>
+                                                                            <td className="py-3.5 px-5 font-semibold text-slate-800">{u.name}</td>
+                                                                            <td className="py-3.5 px-5 text-slate-600">Year {u.year}</td>
+                                                                            <td className="py-3.5 px-5 text-slate-600">Semester {u.semester}</td>
+                                                                            <td className="py-3.5 px-5 text-right space-x-2 whitespace-nowrap">
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        setUnitForm({
+                                                                                            id: u.id,
+                                                                                            course_id: u.course_id,
+                                                                                            code: u.code,
+                                                                                            name: u.name,
+                                                                                            year: u.year.toString(),
+                                                                                            semester: u.semester.toString()
+                                                                                        });
+                                                                                        setShowUnitModal(true);
+                                                                                    }}
+                                                                                    className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 p-2 rounded-lg text-xs font-semibold transition"
+                                                                                    title="Edit Unit"
+                                                                                >
+                                                                                    <Edit2 className="h-3.5 w-3.5" />
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() => handleDeleteUnit(u.id)}
+                                                                                    className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 p-2 rounded-lg text-xs font-semibold transition"
+                                                                                    title="Delete Unit"
+                                                                                >
+                                                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                                                </button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="px-6 py-4 border-t border-slate-200 flex justify-end bg-slate-50 flex-shrink-0">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setActiveSchoolForUnits(null);
+                                                    setActiveCourseForUnits(null);
+                                                }}
+                                                className="px-4 py-2 border border-slate-200 hover:bg-slate-100 rounded-lg text-sm text-slate-600 font-semibold transition"
+                                            >
+                                                Close
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     )}
